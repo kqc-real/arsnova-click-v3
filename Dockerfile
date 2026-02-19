@@ -9,8 +9,8 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package manifests first (layer caching)
-COPY package.json package-lock.json ./
+# Copy package manifests + npm config first (layer caching)
+COPY package.json package-lock.json .npmrc ./
 COPY libs/shared-types/package.json libs/shared-types/
 COPY apps/backend/package.json apps/backend/
 COPY apps/frontend/package.json apps/frontend/
@@ -40,8 +40,8 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copy package manifests + install production deps only
-COPY package.json package-lock.json ./
+# Copy package manifests + npm config, install production deps only
+COPY package.json package-lock.json .npmrc ./
 COPY libs/shared-types/package.json libs/shared-types/
 COPY apps/backend/package.json apps/backend/
 
