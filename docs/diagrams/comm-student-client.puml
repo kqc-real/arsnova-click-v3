@@ -1,7 +1,8 @@
 @startuml comm-student-client
 ' ============================================================================
-' arsnova.click V3 – Kommunikationsdiagramm: Student-Client ↔ Backend
+' arsnova.click V3 – Kommunikationsdiagramm: Student-Client <-> Backend
 ' Protokolle: HTTP (tRPC Queries/Mutations), WebSocket (tRPC Subscriptions)
+' Stand: 2026-02-19 · inkl. Story 4.6 (Bonus-Token)
 ' ============================================================================
 
 !theme plain
@@ -10,9 +11,9 @@ skinparam sequenceMessageAlign center
 skinparam responseMessageBelowArrow true
 skinparam maxMessageSize 220
 
-title Student-Client ↔ Backend – Kommunikation\n(tRPC HTTP + WebSocket)
+title Student-Client <-> Backend – Kommunikation\n(tRPC HTTP + WebSocket)
 
-actor "📱 Student" as student
+actor "Student" as student
 box "Browser (Angular)" #e3f2fd
   participant "VotingView\n(Signals)" as view
   participant "tRPC Client\n(httpBatchLink)" as http
@@ -22,7 +23,7 @@ end box
 box "Backend (Node.js)" #fff3e0
   participant "tRPC Router\n(Express)" as router
   participant "WebSocket\nServer" as wss
-  participant "DTO Layer\n⚠️ Data-Strip" as dto
+  participant "DTO Layer\nData-Strip" as dto
   participant "ScoringService" as scoring
 end box
 
@@ -41,7 +42,7 @@ view -> student : "Quiz: Mathe-Test\n5 Teilnehmer online"
 alt Anonymer Modus (anonymousMode=true)
   view -> student : Automatisch:\n"Teilnehmer #6"
 else Normaler Modus
-  student -> view : Nickname wählen\n"Marie Curie"
+  student -> view : Nickname waehlen\n"Marie Curie"
 end
 
 view -> http : **session.join()**\n//JoinSessionInputSchema//\n{ code: "A3F7K2",\nnickname: "Marie Curie" }
@@ -50,41 +51,44 @@ router -> pg : Participant INSERT\n@@unique(sessionId, nickname)
 
 alt Nickname bereits vergeben
   router --> http : TRPCError\nCONFLICT "Nickname belegt"
-  view -> student : ❌ "Name bereits vergeben"
+  view -> student : "Name bereits vergeben"
+else Rate-Limit ueberschritten
+  router --> http : TRPCError\nTOO_MANY_REQUESTS\nRetry-After: 1s
+  view -> student : "Bitte warte kurz..."
 else Erfolg
   router -> redis : PUBLISH participantJoined
   router --> http : { participantId, token }
-  view -> student : ✅ "Lobby beigetreten!"
+  view -> student : "Lobby beigetreten!"
 end
 
 view -> ws : **Subscribe:**\nsession.onQuestionRevealed\nsession.onResultsRevealed\nsession.onPersonalResult\nsession.onStatusChanged
 ws -> wss : WebSocket CONNECT
-note over ws, wss : Persistente WS-Verbindung\nfür Echtzeit-Events
+note over ws, wss : Persistente WS-Verbindung\nfuer Echtzeit-Events
 
-view -> student : Lobby-Ansicht:\n"Warten auf Dozent…"
+view -> student : Lobby-Ansicht:\n"Warten auf Dozent..."
 
 == Phase 2: Frage empfangen ==
 
 wss -> ws : **Event: onQuestionRevealed**
 note over dto
-  ⚠️ **KRITISCH: Data-Stripping!**
+  **KRITISCH: Data-Stripping!**
   Server sendet **QuestionStudentDTO**:
-  ✅ { id, text, type, timer, difficulty,
-       answers: [{ id, text }] }
-  ❌ Kein isCorrect!
-  ❌ Kein voteCount!
+  { id, text, type, timer, difficulty,
+    answers: [{ id, text }] }
+  Kein isCorrect!
+  Kein voteCount!
 end note
 
-ws -> view : //QuestionStudentDTO//\n{ text: "Was ist √144?",\ntype: "SINGLE_CHOICE",\ntimer: 30,\nanswers: [\n  { id: "a1", text: "10" },\n  { id: "a2", text: "12" },\n  { id: "a3", text: "14" },\n  { id: "a4", text: "16" }\n] }
+ws -> view : //QuestionStudentDTO//\n{ text: "Was ist Wurzel(144)?",\ntype: "SINGLE_CHOICE",\ntimer: 30,\nanswers: [\n  { id: "a1", text: "10" },\n  { id: "a2", text: "12" },\n  { id: "a3", text: "14" },\n  { id: "a4", text: "16" }\n] }
 
-view -> student : Frage + Buttons anzeigen\n△ A: 10  ○ B: 12\n□ C: 14  ◇ D: 16\n⏱️ Countdown: 30s
+view -> student : Frage + Buttons anzeigen\nDreieck A: 10 Kreis B: 12\nQuadrat C: 14 Raute D: 16\nCountdown: 30s
 
 == Phase 3a: Abstimmung – Single Choice ==
 
-student -> view : Button "○ B: 12" antippen
+student -> view : Button "Kreis B: 12" antippen
 note over view
   **Optimistisches UI-Update:**
-  1. Button sofort als "gewählt" markieren ✓
+  1. Button sofort als "gewaehlt" markieren
   2. Debounce 300ms (Doppel-Tap-Schutz)
   3. Spinner auf Button anzeigen
   4. Vibration API: navigator.vibrate(10)
@@ -97,41 +101,41 @@ router -> pg : Check: @@unique\n(session, participant, question)
 
 alt Bereits abgestimmt
   router --> http : TRPCError\nCONFLICT "Bereits abgestimmt"
-  view -> student : Rollback UI ❌\n"Antwort konnte nicht\ngesendet werden"
-else Rate-Limit überschritten
+  view -> student : Rollback UI\n"Antwort konnte nicht\ngesendet werden"
+else Rate-Limit ueberschritten
   router --> http : TRPCError\nTOO_MANY_REQUESTS\nRetry-After: 1s
-  view -> student : ⏳ "Bitte warte\nkurz…"
+  view -> student : "Bitte warte kurz..."
 else Erfolg
   router -> pg : Vote INSERT\n+ VoteAnswer INSERT
   router -> scoring : Score berechnen
-  scoring -> scoring : score = MEDIUM(×2) ×\ntimeBonus(1000 × (1 - 4.2/30))\n= 2 × 860 = **1720**
-  scoring -> scoring : Streak prüfen:\nstreakCount = 3 → ×1.2\nfinalScore = 1720 × 1.2 = **2064**
+  scoring -> scoring : score = MEDIUM(x2) x\ntimeBonus(1000 x (1 - 4.2/30))\n= 2 x 860 = **1720**
+  scoring -> scoring : Streak pruefen:\nstreakCount = 3 -> x1.2\nfinalScore = 1720 x 1.2 = **2064**
   scoring -> pg : Vote UPDATE\n(score, streakCount, streakBonus)
   router -> redis : PUBLISH voteReceived
   router --> http : { success: true }
-  view -> student : ✅ "Antwort gesendet"\nSpinner → Häkchen
+  view -> student : "Antwort gesendet"\nSpinner -> Haekchen
 end
 
 == Phase 3b: Abstimmung – Multiple Choice ==
 
 wss -> ws : **Event: onQuestionRevealed**\n(MC-Frage)
 ws -> view : //QuestionStudentDTO//\n{ type: "MULTIPLE_CHOICE", ... }
-view -> student : MC-Buttons als Toggles:\n△ A ☐  ○ B ☐  □ C ☐  ◇ D ☐
+view -> student : MC-Buttons als Toggles:\nA [ ] B [ ] C [ ] D [ ]
 
-student -> view : "△ A" antippen → ☑️
-student -> view : "□ C" antippen → ☑️
+student -> view : "A" antippen -> [x]
+student -> view : "C" antippen -> [x]
 student -> view : "Absenden" klicken
 
 view -> http : **vote.submit()**\n{ answerIds: ["a1", "a3"],\nresponseTimeMs: 8500 }
 http -> router : HTTP POST /trpc
-router -> pg : Vote + 2× VoteAnswer INSERT
+router -> pg : Vote + 2x VoteAnswer INSERT
 router --> http : { success: true }
 
 == Phase 3c: Abstimmung – Freitext ==
 
 wss -> ws : **Event: onQuestionRevealed**\n(FREETEXT-Frage)
 ws -> view : //QuestionStudentDTO//\n{ type: "FREETEXT", ... }
-view -> student : Textfeld anzeigen\n"Deine Antwort…"
+view -> student : Textfeld anzeigen\n"Deine Antwort..."
 
 student -> view : "Photosynthese" eingeben\n+ Absenden
 view -> http : **vote.submit()**\n{ freeText: "Photosynthese" }
@@ -142,9 +146,9 @@ router --> http : { success: true }
 
 wss -> ws : **Event: onQuestionRevealed**\n(RATING-Frage)
 ws -> view : //QuestionStudentDTO//\n{ type: "RATING",\nratingMin: 1, ratingMax: 5,\nratingLabelMin: "Schlecht",\nratingLabelMax: "Super" }
-view -> student : Skala anzeigen:\nSchlecht ① ② ③ ④ ⑤ Super
+view -> student : Skala anzeigen:\nSchlecht (1) (2) (3) (4) (5) Super
 
-student -> view : "④" antippen
+student -> view : "(4)" antippen
 view -> http : **vote.submit()**\n{ ratingValue: 4 }
 http -> router : HTTP POST /trpc
 router --> http : { success: true }
@@ -153,16 +157,16 @@ router --> http : { success: true }
 
 wss -> ws : **Event: onResultsRevealed**\n//QuestionRevealedDTO//
 note over dto
-  ✅ **Jetzt mit isCorrect!**
-  Erst nach expliziter Auflösung
+  **Jetzt mit isCorrect!**
+  Erst nach expliziter Aufloesung
   durch den Dozenten (Status=RESULTS)
 end note
 
 ws -> view : //QuestionRevealedDTO//\n{ answers: [\n  { id: "a1", text: "10",\n    isCorrect: false, voteCount: 2 },\n  { id: "a2", text: "12",\n    **isCorrect: true**, voteCount: 15 },\n  ... ] }
 
-view -> student : Eigene Antwort markiert:\n○ B: 12 ✅ Richtig! (grün)
+view -> student : Eigene Antwort markiert:\nKreis B: 12 - Richtig! (gruen)
 
-== Phase 5: Persönliche Scorecard ==
+== Phase 5: Persoenliche Scorecard ==
 
 wss -> ws : **Event: onPersonalResult**\n//PersonalScorecardDTO//
 note over wss
@@ -170,47 +174,66 @@ note over wss
   Kein Broadcast an alle.
 end note
 
-ws -> view : //PersonalScorecardDTO//\n{ wasCorrect: true,\nquestionScore: 2064,\nbaseScore: 1720,\nstreakCount: 3,\nstreakMultiplier: 1.2,\ncurrentRank: 2,\npreviousRank: 5,\nrankChange: 3,\ntotalScore: 5840 }
+ws -> view : //PersonalScorecardDTO//\n{ wasCorrect: true,\nquestionScore: 2064,\nbaseScore: 1720,\nstreakCount: 3,\nstreakMultiplier: 1.2,\ncurrentRank: 2,\npreviousRank: 5,\nrankChange: 3,\ntotalScore: 5840,\nbonusToken: null }
 
 view -> view : Motivationsmeldung\ngenerieren (clientseitig)
 note over view
-  Kontext: Richtig + Streak ≥ 3
-  → "On fire! 🔥 3er-Serie!"
+  Kontext: Richtig + Streak >= 3
+  -> "On fire! 3er-Serie!"
   Kontext: rankChange = +3
-  → "3 Plätze aufgestiegen! 🚀"
+  -> "3 Plaetze aufgestiegen!"
 end note
 
-view -> student : 📋 **Persönliche Scorecard**\n(Bottom-Sheet-Overlay):\n┌─────────────────────┐\n│ ✅ Richtig!          │\n│ +2064 Punkte        │\n│  (1720 × 1.2 Streak)│\n│ 🔥 3er-Serie!       │\n│ Rang: 2 (↑3 Plätze) │\n│ Gesamt: 5840 Pkte   │\n│ "On fire! 🔥"       │\n└─────────────────────┘
+view -> student : **Persoenliche Scorecard**\n(Bottom-Sheet-Overlay):\n+---------------------------+\n| Richtig!                  |\n| +2064 Punkte              |\n|  (1720 x 1.2 Streak)     |\n| 3er-Serie!                |\n| Rang: 2 (+3 Plaetze)     |\n| Gesamt: 5840 Pkte        |\n| "On fire!"                |\n+---------------------------+
 
 == Phase 6: Emoji-Reaktion ==
 
 opt Emoji-Reaktionen aktiv
-  view -> student : Emoji-Leiste:\n👏  🎉  😮  😂  😢
-  student -> view : "🎉" antippen
-  view -> http : **session.react()**\n//SendEmojiReactionInputSchema//\n{ sessionId, questionId,\nemoji: "🎉" }
+  view -> student : Emoji-Leiste:\nApplaus Konfetti Staun Lach Traurig
+  student -> view : Konfetti antippen
+  view -> http : **session.react()**\n//SendEmojiReactionInputSchema//\n{ sessionId, questionId,\nemoji: "Konfetti" }
   http -> router : HTTP POST /trpc
-  router -> redis : PUBLISH emoji\n(flüchtig, nicht persistiert)
+  router -> redis : PUBLISH emoji\n(fluechtig, nicht persistiert)
   router --> http : ok
 end
 
-== Phase 7: Nächste Frage ==
+== Phase 7: Naechste Frage ==
 
 wss -> ws : **Event: onStatusChanged**\n{ status: "ACTIVE" }
-ws -> view : Scorecard ausblenden\nNeue Frage laden…
+ws -> view : Scorecard ausblenden\nNeue Frage laden...
 
-wss -> ws : **Event: onQuestionRevealed**\n//QuestionStudentDTO// (nächste Frage)
+wss -> ws : **Event: onQuestionRevealed**\n//QuestionStudentDTO// (naechste Frage)
 note over view : Schleife wiederholt sich
 
-== Phase 8: Session beendet ==
+== Phase 8: Session beendet + Bonus-Token (Story 4.6) ==
 
 wss -> ws : **Event: onStatusChanged**\n{ status: "FINISHED" }
+
+wss -> ws : **Event: onPersonalResult (final)**\n//PersonalScorecardDTO//\n{ ..., bonusToken: "BNS-A3F7-K2M9" }
+note over wss
+  bonusToken ist nur fuer Top-X
+  gesetzt, sonst null.
+  Individuell, kein Broadcast!
+end note
+
 ws -> view : Session-Ende
+
+alt bonusToken != null (Top-X Platzierung)
+  view -> student : **Bonus-Token anzeigen**\n+---------------------------+\n| Dein Bonus-Token:         |\n| BNS-A3F7-K2M9             |\n| [Kopieren]                |\n| "Sende dieses Token per   |\n|  E-Mail an deinen Dozenten|\n|  fuer Bonuspunkte."       |\n+---------------------------+
+
+  student -> view : "Kopieren" antippen
+  view -> view : navigator.clipboard\n.writeText("BNS-A3F7-K2M9")
+  view -> student : "Token kopiert!"
+
+else bonusToken == null
+  view -> student : Kein Token-Bereich
+end
 
 view -> http : **session.getLeaderboard()**\n{ sessionId }
 http -> router : HTTP GET /trpc
 router --> http : //LeaderboardEntryDTO[]//
 
-view -> student : 🏆 Finales Ranking:\n#1 Albert Einstein – 7200\n#2 **Marie Curie – 5840** ← Du\n#3 Ada Lovelace – 5100
+view -> student : Finales Ranking:\n#1 Albert Einstein – 7200\n#2 **Marie Curie – 5840** <- Du\n#3 Ada Lovelace – 5100
 
 wss -> ws : Verbindung geschlossen
 
@@ -224,14 +247,14 @@ ws -> wss : WebSocket CONNECT
 student -> view : Frage eingeben:\n"Kommt das in der Klausur?"
 view -> http : **qa.submit()**\n//SubmitQaQuestionInputSchema//\n{ sessionId,\ntext: "Kommt das in der Klausur?" }
 http -> router : HTTP POST /trpc
-router -> pg : QaQuestion INSERT\n(participantId für 3-Fragen-Limit)
+router -> pg : QaQuestion INSERT\n(participantId fuer 3-Fragen-Limit)
 router -> wss : Push Update
 router --> http : { questionId }
 
 wss -> ws : **Event: onQuestionsUpdated**\n//QaQuestionDTO[]//\n[{ text, upvoteCount: 0,\nstatus: "ACTIVE",\nhasUpvoted: false }]
 ws -> view : Fragenliste aktualisieren
 
-student -> view : Frage upvoten 👍
+student -> view : Frage upvoten
 view -> http : **qa.upvote()**\n//UpvoteQaQuestionInputSchema//\n{ questionId }
 http -> router : HTTP POST /trpc
 router -> pg : QaUpvote INSERT\n@@unique(qaQuestionId, participantId)
@@ -249,11 +272,11 @@ wss -> ws : **Event: onQuestionsUpdated**\n(sortiert nach Upvotes, Echtzeit)
 
 == Verbindungsabbruch & Reconnect (Story 4.3) ==
 
-ws ->x wss : ⚡ Verbindung unterbrochen
-view -> student : ⚠️ "Verbindung\nunterbrochen…"
-view -> ws : Reconnect-Versuch\n(Exponential Backoff:\n1s → 2s → 4s → 8s)
+ws ->x wss : Verbindung unterbrochen
+view -> student : "Verbindung unterbrochen..."
+view -> ws : Reconnect-Versuch\n(Exponential Backoff:\n1s -> 2s -> 4s -> 8s)
 ws -> wss : WebSocket RECONNECT
 wss -> ws : Aktuellen Session-State\nsynchronisieren
-view -> student : ✅ "Wieder verbunden!"
+view -> student : "Wieder verbunden!"
 
 @enduml

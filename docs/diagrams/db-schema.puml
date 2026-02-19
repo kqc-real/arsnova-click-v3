@@ -1,21 +1,23 @@
 @startuml db-schema
 ' ============================================================================
-' arsnova.click V3 – Datenbankschema (ER-Diagramm)
-' Quelle: prisma/schema.prisma
+' arsnova.click V3 – ER-Diagramm (Prisma-Schema, Stand: 2026-02-19)
+' 12 Modelle · 8 Enums · Alle Relationen
 ' ============================================================================
 
 !theme plain
 skinparam linetype ortho
-skinparam classAttributeIconSize 0
 skinparam shadowing false
+skinparam class {
+  BackgroundColor #FEFEFE
+  BorderColor #333333
+  ArrowColor #555555
+}
 
-hide circle
-hide methods
+title arsnova.click V3 — Datenbank-Schema (PostgreSQL)\n12 Modelle · 8 Enums
 
-title arsnova.click V3 – Datenbankschema\n(Prisma / PostgreSQL)
+' ─── Quiz-Verwaltung ─────────────────────────────────────────────────────────
 
-package "Quiz-Verwaltung" <<Rectangle>> {
-
+package "Quiz-Verwaltung" #e8f5e9 {
   entity "User" as user {
     * **id** : UUID <<PK>>
     --
@@ -43,6 +45,7 @@ package "Quiz-Verwaltung" <<Rectangle>> {
     teamAssignment : TeamAssignment = AUTO
     backgroundMusic : String?
     nicknameTheme : NicknameTheme = NOBEL_LAUREATES
+    **bonusTokenCount : Int?** ← Story 4.6
     creatorId : UUID? <<FK>>
     createdAt : DateTime
     updatedAt : DateTime
@@ -67,13 +70,21 @@ package "Quiz-Verwaltung" <<Rectangle>> {
     * **id** : UUID <<PK>>
     --
     text : String
-    isCorrect : Boolean ⚠️
+    **isCorrect : Boolean**
     questionId : UUID <<FK>>
   }
+
+  note right of answer
+    ⚠️ **Data-Stripping (Story 2.4):**
+    isCorrect wird im Status ACTIVE
+    **niemals** an Studenten gesendet!
+    Erst nach RESULTS-Auflösung sichtbar.
+  end note
 }
 
-package "Live-Session" <<Rectangle>> {
+' ─── Live-Session ────────────────────────────────────────────────────────────
 
+package "Live-Session" #fff3e0 {
   entity "Session" as session {
     * **id** : UUID <<PK>>
     --
@@ -95,8 +106,8 @@ package "Live-Session" <<Rectangle>> {
     sessionId : UUID <<FK>>
     teamId : UUID? <<FK>>
     joinedAt : DateTime
-    ..
-    <<UNIQUE>> sessionId + nickname
+    --
+    <<UNIQUE>> (sessionId, nickname)
   }
 
   entity "Team" as team {
@@ -105,8 +116,8 @@ package "Live-Session" <<Rectangle>> {
     name : String
     color : String?
     sessionId : UUID <<FK>>
-    ..
-    <<UNIQUE>> sessionId + name
+    --
+    <<UNIQUE>> (sessionId, name)
   }
 
   entity "Vote" as vote {
@@ -122,8 +133,8 @@ package "Live-Session" <<Rectangle>> {
     streakCount : Int = 0
     streakBonus : Float = 1.0
     votedAt : DateTime
-    ..
-    <<UNIQUE>> sessionId + participantId + questionId
+    --
+    <<UNIQUE>> (session, participant, question)
   }
 
   entity "VoteAnswer" as voteanswer {
@@ -131,13 +142,45 @@ package "Live-Session" <<Rectangle>> {
     --
     voteId : UUID <<FK>>
     answerOptionId : UUID <<FK>>
-    ..
-    <<UNIQUE>> voteId + answerOptionId
+    --
+    <<UNIQUE>> (voteId, answerOptionId)
   }
+
+  note bottom of voteanswer
+    n:m Join-Tabelle für
+    MC-Mehrfachauswahl
+  end note
 }
 
-package "Q&A-Modus" <<Rectangle>> {
+' ─── Bonus-Token (Story 4.6) ────────────────────────────────────────────────
 
+package "Bonus-Token" #e3f2fd {
+  entity "BonusToken" as bonustoken {
+    * **id** : UUID <<PK>>
+    --
+    **token : String <<UNIQUE>>**
+    sessionId : UUID <<FK>>
+    participantId : UUID <<FK>>
+    nickname : String (Snapshot)
+    quizName : String (Snapshot)
+    totalScore : Int
+    rank : Int
+    generatedAt : DateTime
+  }
+
+  note bottom of bonustoken
+    🎓 **Story 4.6:**
+    Kryptografisch sicher (BNS-A3F7-K2M9).
+    Nur Top-X erhalten Token.
+    90-Tage-Aufbewahrung, dann auto-delete.
+    Anonymität bewahrt bis freiwillig
+    per E-Mail eingereicht.
+  end note
+}
+
+' ─── Q&A-Modus (Epic 8) ─────────────────────────────────────────────────────
+
+package "Q&A-Modus" #fce4ec {
   entity "QaQuestion" as qaquestion {
     * **id** : UUID <<PK>>
     --
@@ -154,14 +197,14 @@ package "Q&A-Modus" <<Rectangle>> {
     --
     qaQuestionId : UUID <<FK>>
     participantId : UUID <<FK>>
-    ..
-    <<UNIQUE>> qaQuestionId + participantId
+    --
+    <<UNIQUE>> (qaQuestionId, participantId)
   }
 }
 
 ' ─── Enums ───────────────────────────────────────────────────────────────────
 
-package "Enums" <<Rectangle>> #f5f5f5 {
+package "Enums" #f3e5f5 {
   enum QuestionType {
     MULTIPLE_CHOICE
     SINGLE_CHOICE
@@ -171,9 +214,9 @@ package "Enums" <<Rectangle>> #f5f5f5 {
   }
 
   enum Difficulty {
-    EASY   (×1)
+    EASY (×1)
     MEDIUM (×2)
-    HARD   (×3)
+    HARD (×3)
   }
 
   enum SessionStatus {
@@ -213,28 +256,23 @@ package "Enums" <<Rectangle>> #f5f5f5 {
 
 ' ─── Relationen ──────────────────────────────────────────────────────────────
 
-user        ||--o{  quiz         : "erstellt"
-quiz        ||--o{  question     : "enthält"
-question    ||--o{  answer       : "hat Optionen"
-quiz        ||--o{  session      : "wird live als"
-session     ||--o{  participant  : "hat Teilnehmer"
-session     ||--o{  team         : "hat Teams"
-session     ||--o{  vote         : "sammelt Votes"
-session     ||--o{  qaquestion   : "hat Q&A-Fragen"
-participant ||--o{  vote         : "stimmt ab"
-participant |o--o{  qaquestion   : "reicht ein"
-participant |o--o{  qaupvote     : "upvotet"
-question    ||--o{  vote         : "wird beantwortet"
-vote        ||--o{  voteanswer   : "wählt Optionen"
-answer      ||--o{  voteanswer   : "wird gewählt"
-team        |o--o{  participant  : "gruppiert"
-qaquestion  ||--o{  qaupvote     : "wird gevotet"
-
-note bottom of answer
-  ⚠️ isCorrect wird NIEMALS
-  im Status ACTIVE an
-  Studenten gesendet!
-  (Data-Stripping, Story 2.4)
-end note
+user ||--o{ quiz : "erstellt"
+quiz ||--o{ question : "enthält"
+question ||--o{ answer : "hat"
+quiz ||--o{ session : "wird gespielt in"
+session ||--o{ participant : "nimmt teil"
+session ||--o{ team : "hat Teams"
+team ||--o{ participant : "Mitglieder"
+session ||--o{ vote : "Stimmen"
+participant ||--o{ vote : "stimmt ab"
+question ||--o{ vote : "befragt"
+vote ||--o{ voteanswer : "wählt aus"
+answer ||--o{ voteanswer : "wird gewählt"
+session ||--o{ bonustoken : "vergibt"
+participant ||--o{ bonustoken : "erhält"
+session ||--o{ qaquestion : "Q&A-Fragen"
+participant ||--o{ qaquestion : "stellt"
+qaquestion ||--o{ qaupvote : "wird gevotet"
+participant ||--o{ qaupvote : "votet"
 
 @enduml

@@ -1,228 +1,296 @@
 @startuml activity-dozent-student
 ' ============================================================================
-' arsnova.click V3 – Activity-Diagramm: Dozent ↔ Student Interaktion
-' Zeigt den kompletten Ablauf von Quiz-Erstellung bis Session-Ende
+' arsnova.click V3 – Activity-Diagramm: Dozent / Student / Server
+' Vollständiger Quiz-Lifecycle inkl. Bonus-Token, Preview, SC-Formate
+' Stand: 2026-02-19 · 56 Storys · 9 Epics
 ' ============================================================================
 
 !theme plain
 skinparam shadowing false
-skinparam ActivityBackgroundColor #ffffff
-skinparam ActivityBorderColor #333333
-skinparam PartitionBackgroundColor #f5f5f5
+skinparam activity {
+  BackgroundColor #FEFEFE
+  BorderColor #333333
+}
 
-title arsnova.click V3 – Ablauf einer Quiz-Session\n(Dozent ↔ Student)
+title arsnova.click V3 — Aktivitätsdiagramm\nDozent · Student · Server
 
-|#e8f5e9| 🎓 Dozent |
-|#e3f2fd| 📱 Student |
-|#fff3e0| ⚙️ Server |
+|#e8f5e9| Dozent |
+|#e3f2fd| Student |
+|#fff3e0| Server |
 
-' ═══════════════════════════════════════════════════════════════════════
-' Phase 1: Quiz-Erstellung (Local-First)
-' ═══════════════════════════════════════════════════════════════════════
+' ─── Phase 1: Quiz erstellen (Local-First) ──────────────────────────────────
 
-|🎓 Dozent|
+|Dozent|
 start
 :Quiz erstellen\n(Name, Beschreibung);
-note right
-  Lokal in IndexedDB (Yjs CRDT)
-  Kein Server-Roundtrip!
-end note
 
-:Preset wählen\n🎮 Spielerisch / 🎓 Seriös;
+if (Preset wählen?) then (ja)
+  :🎮 Spielerisch **oder** 🎓 Seriös\nauswählen (Story 1.11);
+  :Toggles automatisch setzen\n(nach Wunsch anpassbar);
+else (nein)
+  :Einzelne Toggles manuell setzen\n(Leaderboard, Sound, Emoji, …);
+endif
 
-:Fragen hinzufügen\n(MC / SC / Freitext / Umfrage / Rating);
+:bonusTokenCount konfigurieren?\n(Story 4.6: Top X erhalten Token);
 
-:Antwortoptionen definieren\n& korrekte markieren ✓;
+:Fragen hinzufügen;
 
-:Konfiguration anpassen\n(Timer, Nickname-Theme,\nLeaderboard, Sounds, …);
-
-:Quiz lokal gespeichert ✅;
-
-' ═══════════════════════════════════════════════════════════════════════
-' Phase 2: Session starten
-' ═══════════════════════════════════════════════════════════════════════
-
-:Quiz live schalten 🚀;
-
-|⚙️ Server|
-:session.create()\n→ 6-stelliger Code generiert;
-:Quiz-Daten + isCorrect\nin PostgreSQL speichern;
-:Session-Status = **LOBBY**;
-
-|🎓 Dozent|
-:Session-Code + QR-Code\nanzeigen (Beamer);
-
-' ═══════════════════════════════════════════════════════════════════════
-' Phase 3: Studenten treten bei
-' ═══════════════════════════════════════════════════════════════════════
-
-|📱 Student|
-:Session-Code eingeben\n(oder QR-Code scannen);
-
-|⚙️ Server|
-:session.join()\n→ Code validieren;
-
-if (Code gültig?) then (ja)
-  |📱 Student|
-
-  if (Anonymer Modus?) then (ja)
-    :Automatische ID zuweisen\n"Teilnehmer #7";
-  else (nein)
-    :Nickname aus Themenliste\nwählen oder frei eingeben;
+repeat
+  if (Fragentyp?) then (SC)
+    if (SC-Schnellformat?) then (ja)
+      :Schnellformat wählen\n(Story 1.12: Ja/Nein,\nWahr/Falsch, A/B/C/D);
+    else (nein)
+      :Antworten manuell eingeben;
+    endif
+    :Korrekte Antwort(en) markieren;
+  elseif (MC) then
+    :Antworten eingeben\n(mehrere korrekt);
+    :Korrekte markieren;
+  elseif (Freitext) then
+    :Nur Fragenstamm eingeben\n(keine Optionen);
+  elseif (Rating) then
+    :Skala konfigurieren\n(Min/Max, Labels);
+  elseif (Survey) then
+    :Optionen ohne isCorrect;
   endif
 
-  |⚙️ Server|
-  :Participant in DB speichern\n(Unique: Session + Nickname);
-  :WS-Event: onParticipantJoined\nan Dozent pushen;
+  :Schwierigkeitsgrad wählen\n(Easy/Medium/Hard);
+  :Markdown & KaTeX im Editor\n(Story 1.7: Live-Preview);
+  :In Yjs/IndexedDB speichern\n(Local-First, kein Server);
 
-  |🎓 Dozent|
-  :Teilnehmer in Lobby\nlive anzeigen 👥;
+repeat while (Weitere Frage?) is (ja)
 
+' ─── Phase 2: Quiz-Preview (Story 1.13) ─────────────────────────────────────
+
+:Quiz-Preview öffnen 👁️\n(Story 1.13);
+:Fragen durchblättern\n(Hotkeys: →/← N/P Home/End 1-9);
+if (Validierungsprobleme?) then (ja)
+  :⚠️ Warnung anklicken\n→ zur Frage springen;
+  :Inline-Schnellkorrektur\n(Text klicken / isCorrect togglen\n/ Hotkey E);
+  :Änderung → sofort Yjs-Sync;
 else (nein)
-  |📱 Student|
-  :Fehlermeldung\n"Code ungültig" ❌;
+  :✅ Alle Fragen valide\n— bereit zum Live-Schalten;
+endif
+
+' ─── Phase 3: Quiz live schalten ─────────────────────────────────────────────
+
+:\"Live schalten\" klicken;
+
+|Server|
+:Quiz-Daten empfangen\n(QuizUploadInputSchema validieren);
+:Quiz + Questions + AnswerOptions\nin PostgreSQL speichern;
+:Session erstellen\n(6-stelliger Code generieren\nStatus = LOBBY);
+
+if (Session-Typ?) then (QUIZ)
+  :quizId setzen;
+else (Q_AND_A)
+  :title setzen\nquizId = null;
+endif
+
+:→ { sessionId, code: "A3F7K2" };
+
+|Dozent|
+:Session-Code + QR-Code anzeigen\n(Beamer-Ansicht öffnen);
+:WebSocket-Subscriptions starten\n(onParticipantJoined,\nonStatusChanged);
+
+' ─── Phase 4: Studenten treten bei ───────────────────────────────────────────
+
+|Student|
+:Session-Code eingeben\n(6-stellig, Story 3.1);
+
+|Server|
+:Code validieren\n(Session existiert? Status=LOBBY?);
+
+if (Rate-Limit OK?) then (ja)
+  :✅ Session-Info zurückgeben;
+else (nein)
+  :❌ TOO_MANY_REQUESTS\n(5 Versuche / 5 Min);
   stop
 endif
 
-' ═══════════════════════════════════════════════════════════════════════
-' Phase 4: Quiz-Durchführung (Schleife pro Frage)
-' ═══════════════════════════════════════════════════════════════════════
-
-|🎓 Dozent|
-:Auf "Nächste Frage"\nklicken ▶️;
-
-|⚙️ Server|
-:Session-Status = **ACTIVE**\ncurrentQuestion++;
-:QuestionStudentDTO erstellen\n⚠️ isCorrect ENTFERNT!;
-:WS-Event: onQuestionRevealed\nan alle Studenten;
-
-repeat
-
-  |📱 Student|
-  :Frage + Antwortoptionen\nempfangen & anzeigen;
-  note right
-    △ A  ○ B  □ C  ◇ D
-    Vollbreite Buttons
-    Thumb Zone (unten)
-  end note
-
-  if (Timer gesetzt?) then (ja)
-    |📱 Student|
-    :⏱️ Countdown anzeigen\n(synchron via Server-Timestamp);
-  else (nein)
-    :Offene Antwortphase\n(Dozent beendet manuell);
-  endif
-
-  |📱 Student|
-
-  switch (Fragentyp?)
-    case ( MC )
-      :Mehrere Optionen\ntogglen + Absenden;
-    case ( SC )
-      :Eine Option antippen\n→ sofort abgesendet;
-    case ( Freitext )
-      :Text eingeben\n+ Absenden;
-    case ( Rating )
-      :Skalenwert wählen\n(1–5 oder 1–10);
-    case ( Umfrage )
-      :Option wählen\n(kein richtig/falsch);
-  endswitch
-
-  :Optimistisches UI-Update\n"Antwort gesendet ✓";
-
-  |⚙️ Server|
-  :vote.submit()\n→ Antwort validieren & speichern;
-  :Score berechnen\nscore = difficulty × timeBonus;
-  :Streak aktualisieren\nfinalScore = score × streakMultiplier;
-
-  |🎓 Dozent|
-  :Live-Abstimmungsbalken\nauf Beamer aktualisieren 📊;
-
-  :Auf "Ergebnis zeigen"\nklicken 📈;
-
-  |⚙️ Server|
-  :Session-Status = **RESULTS**;
-  :QuestionRevealedDTO erstellen\n✅ isCorrect JETZT enthalten;
-  :PersonalScorecardDTO\npro Participant berechnen;
-  :WS-Events pushen:\n• onResultsRevealed (alle)\n• onPersonalResult (individuell);
-
-  |📱 Student|
-  :Eigene Antwort markiert\n✓ grün / ✗ rot;
-  :Persönliche Scorecard\nals Bottom-Sheet:\n• Punkte + Streak 🔥\n• Rang + Veränderung ↑↓\n• Motivationsmeldung 💪;
-
-  if (Emoji-Reaktionen aktiv?) then (ja)
-    :Emoji-Leiste anzeigen\n👏 🎉 😮 😂 😢;
-    :Emoji antippen → Server;
-    |⚙️ Server|
-    :session.react()\n→ Emoji via Redis pushen;
-    |🎓 Dozent|
-    :Emoji-Blasen auf\nBeamer animieren 🎉;
-  else (nein)
-  endif
-
-  |🎓 Dozent|
-  :Ergebnis-Visualisierung\nauf Beamer anzeigen;
-
-  if (Leaderboard aktiv?) then (ja)
-    :Leaderboard-Zwischenstand\nTop 5 anzeigen 🏆;
-  else (nein)
-  endif
-
-  if (Weitere Fragen?) then (ja)
-    |⚙️ Server|
-    :Session-Status = **PAUSED**;
-    |🎓 Dozent|
-    :Auf "Nächste Frage"\nklicken ▶️;
-    |⚙️ Server|
-    :Session-Status = **ACTIVE**\ncurrentQuestion++;
-    :QuestionStudentDTO pushen\n⚠️ isCorrect ENTFERNT;
-  else (nein)
-  endif
-
-repeat while (Weitere Fragen?) is (ja) not (nein)
-
-' ═══════════════════════════════════════════════════════════════════════
-' Phase 5: Session beenden
-' ═══════════════════════════════════════════════════════════════════════
-
-|🎓 Dozent|
-:Auf "Quiz beenden"\nklicken 🏁;
-
-|⚙️ Server|
-:session.end()\nSession-Status = **FINISHED**;
-:Finales Leaderboard berechnen\n(Sortierung: Score → Antwortzeit);
-:Redis-Keys löschen\n(flüchtige Daten entfernt);
-
-|🎓 Dozent|
-:Finales Leaderboard\nauf Beamer anzeigen 🏆;
-
-if (Belohnungseffekte aktiv?) then (ja)
-  :🥇 Platz 1: Konfetti + Gold-Pokal\n🥈 Platz 2: Silber-Medaille\n🥉 Platz 3: Bronze-Medaille;
+|Student|
+if (anonymousMode?) then (ja)
+  :Automatisches Pseudonym\n„Teilnehmer #7";
 else (nein)
+  :Nickname wählen\n(Thema: Nobelpreisträger, …\noder Freitext, Story 3.2);
 endif
 
-|📱 Student|
-:Finales Ranking\nauf Smartphone sehen;
-:Session-Teilnahme beendet 👋;
+|Server|
+:Participant INSERT\n@@unique(sessionId, nickname);
+:→ PUBLISH participantJoined;
 
-|⚙️ Server|
-:Auto-Cleanup nach 24h\nfür nicht beendete Sessions ♻️;
+|Dozent|
+:Live-Counter +1\nNickname in Lobby;
 
-|🎓 Dozent|
-:Quiz bleibt lokal\nin IndexedDB erhalten 💾;
+' ─── Phase 5: Quiz-Schleife ──────────────────────────────────────────────────
+
+|Dozent|
+repeat
+  :\"Nächste Frage\" klicken ▶️;
+
+  |Server|
+  :currentQuestion++\nStatus = ACTIVE;
+  :QuestionStudentDTO erstellen\n⚠️ isCorrect ENTFERNT!;
+  :PUBLISH an alle Clients;
+
+  |Student|
+  :Frage + Countdown empfangen\n(Markdown/KaTeX gerendert\n△○□◇ Buttons);
+
+  if (Fragentyp?) then (SC)
+    :1 Button antippen → sofort senden\n(Debounce 300ms, Vibration);
+  elseif (MC) then
+    :Buttons togglen → Absenden;
+  elseif (Freitext) then
+    :Text eingeben → Absenden;
+  elseif (Rating) then
+    :Skala antippen (1 Tap)\n→ ratingValue senden;
+  elseif (Survey) then
+    :Option wählen → senden;
+  endif
+
+  |Server|
+  :Vote INSERT + VoteAnswer INSERT\n@@unique(session, participant, question);
+
+  if (SC/MC & korrekt?) then (ja)
+    :score = DIFFICULTY × timeBonus\nStreak++ → streakMultiplier;
+  else (nein/Survey/Rating/Freitext)
+    :score = 0\n(SURVEY/FREETEXT/RATING: Streak bleibt);
+  endif
+
+  :→ voteCountUpdate (Broadcast);
+
+  |Dozent|
+  :Live-Abstimmungsbalken\naktualisieren;
+  :\"Ergebnis zeigen\" klicken 📈;
+
+  |Server|
+  :Status = RESULTS;
+  :QuestionRevealedDTO erstellen\n✅ isCorrect ENTHALTEN!\n+ voteCount, votePercentage;
+  :→ onResultsRevealed (Broadcast);
+  :→ onPersonalResult (individuell pro Participant\n+ bonusToken bei letzter Frage);
+
+  |Student|
+  :Ergebnis: ✅ Richtig / ❌ Falsch;
+  :Persönliche Scorecard\n(Score, Streak, Rang, Rangänderung);
+  :Motivationsmeldung\n(clientseitig generiert);
+
+  if (Emoji-Reaktionen aktiv?) then (ja)
+    :Emoji senden\n(👏 🎉 😮 😂 😢);
+    |Server|
+    :PUBLISH Emoji\n(flüchtig, nicht persistiert);
+    |Dozent|
+    :Emoji-Blasen auf Beamer;
+  endif
+
+  |Dozent|
+  :Ergebnis-Diagramm anzeigen\n(Balken / Wordcloud / Histogramm);
+  if (showLeaderboard?) then (ja)
+    :Leaderboard-Zwischenstand (Top 5)\n(+ 🔥 bei Streak ≥ 3);
+    if (teamMode?) then (ja)
+      :Team-Leaderboard anzeigen;
+    endif
+  endif
+
+repeat while (Weitere Fragen?) is (ja)
+
+' ─── Phase 6: Quiz beenden ───────────────────────────────────────────────────
+
+|Dozent|
+:\"Quiz beenden\" klicken 🏁;
+
+|Server|
+:Status = FINISHED;
+
+if (bonusTokenCount > 0?) then (ja)
+  :Top-X ermitteln aus Leaderboard;
+  :BonusToken generieren\n(crypto.randomUUID,\nBNS-XXXX-XXXX Format);
+  :BonusToken INSERT je Platz\n(token, nickname, quizName,\ntotalScore, rank);
+  :→ onPersonalResult mit bonusToken\n(nur an Top-X, individuell);
+endif
+
+:Redis-Keys löschen ♻️;
+:→ onStatusChanged: FINISHED;
+
+|Student|
+:Finales Ranking anzeigen;
+if (Bonus-Token erhalten?) then (ja)
+  :🎓 „Dein Bonus-Token: BNS-A3F7-K2M9"\nKopieren → Zwischenablage;
+  :Hinweis: „Sende per E-Mail\nan Dozenten für Bonuspunkte.";
+else (nein)
+  :Normales finales Leaderboard;
+endif
+
+|Dozent|
+:Finales Leaderboard + Belohnungseffekte\n(🥇 Konfetti, 🥈 Jubel, 🥉 Applaus);
+
+if (bonusTokenCount > 0?) then (ja)
+  :session.getBonusTokens() aufrufen;
+  :Token-Tabelle anzeigen\n(Token, Pseudonym, Punkte, Rang, Datum);
+  :Optional: CSV exportieren;
+endif
+
+:WebSocket-Verbindung geschlossen;
+
+|Server|
+:Cleanup: 24h nicht beendete Sessions\n90 Tage: BonusToken auto-delete;
+
+' ─── Parallelpfad: Q&A-Modus ────────────────────────────────────────────────
+
+|Dozent|
+detach
+
+|Dozent|
+:Q&A-Session starten\n(type = Q_AND_A\noptional: Titel, moderationMode);
+
+|Server|
+:Session (LOBBY → ACTIVE)\nkein Quiz, keine Fragen;
+
+|Student|
+:Session beitreten;
+:Frage einreichen\n(max. 500 Zeichen, max. 3/Session);
+
+|Server|
+:QaQuestion INSERT\n(participantId für 3-Fragen-Limit);
+
+if (moderationMode?) then (ja)
+  :Status = PENDING;
+  |Dozent|
+  :Frage freigeben / ablehnen;
+  |Server|
+  :Status ACTIVE / DELETED;
+else (nein)
+  :Status = ACTIVE (sofort sichtbar);
+endif
+
+:→ qa.onQuestionsUpdated;
+
+|Student|
+:Andere Fragen upvoten (Toggle)\n→ QaUpvote INSERT/DELETE;
+
+|Dozent|
+:Fragen sortiert nach Upvotes\nsehen (Echtzeit);
+:Pin 📌 / Archivieren ✅ / Löschen 🗑️;
+
+|Server|
+:QaQuestion.status UPDATE\n→ Push Update;
+
+|Dozent|
+:Q&A beenden;
+
+|Server|
+:Status = FINISHED\nRedis Cleanup;
+
 stop
 
-' ═══════════════════════════════════════════════════════════════════════
-' Legende
-' ═══════════════════════════════════════════════════════════════════════
-
-legend bottom
-  | Symbol | Bedeutung |
-  | ⚠️ | Sicherheitsrelevante Aktion (Data-Stripping) |
-  | 🔥 | Streak-Indikator (≥ 3 richtige in Folge) |
-  | 📊 | Echtzeit-Aktualisierung via WebSocket |
-  | 💾 | Local-First (IndexedDB / Yjs) |
-  | ♻️ | Automatisches Cleanup |
+legend right
+  |= Symbol |= Bedeutung |
+  | ⚠️ | Data-Stripping: isCorrect entfernt |
+  | ✅ | Data-Reveal: isCorrect mitgesendet |
+  | 🎓 | Bonus-Token (Story 4.6) |
+  | 👁️ | Quiz-Preview-Modus (Story 1.13) |
+  | △○□◇ | Formen-Codierung (Barrierefreiheit) |
+  | 🔥 | Streak ≥ 3 |
+  | ♻️ | Cleanup (Redis + PostgreSQL) |
 endlegend
 
 @enduml

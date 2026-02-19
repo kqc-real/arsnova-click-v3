@@ -1,154 +1,229 @@
 @startuml frontend-components
 ' ============================================================================
-' arsnova.click V3 – Frontend-Komponentendiagramm (Angular)
-' Technologie: Angular 19, Standalone Components, Signals, Tailwind CSS
+' arsnova.click V3 – Frontend-Komponentendiagramm (Angular 19, Stand: 2026-02-19)
+' Standalone Components · Signals · Tailwind CSS · tRPC · Yjs
+' 56 Storys · 9 Epics
 ' ============================================================================
 
 !theme plain
 skinparam shadowing false
-skinparam componentStyle uml2
-
-title arsnova.click V3 – Frontend-Architektur\n(Angular Standalone Components)
-
-package "Angular App" as app {
-
-  component "AppComponent" as root <<Root>> #e8f5e9 {
-    portin " " as rootIn
-  }
-
-  package "Shared / Layout" as shared #f5f5f5 {
-    component "HeaderComponent" as header
-    component "FooterComponent" as footer
-    component "ThemeSwitcherComponent" as theme
-    component "LanguageSwitcherComponent" as lang
-    component "CountdownComponent" as countdown
-    component "MarkdownKatexComponent" as mdkatex
-  }
-
-  package "📄 Routing (app.routes.ts)" as routing #fffde7 {
-
-    package "/ (Startseite)" as home {
-      component "HomeComponent" as homeComp
-      component "ServerStatusWidget" as serverStatus
-      component "JoinSessionInput" as joinInput
-    }
-
-    package "/quiz (Dozent)" as quizMgmt {
-      component "QuizListComponent" as quizList
-      component "QuizEditorComponent" as quizEditor
-      component "QuestionFormComponent" as questionForm
-      component "AnswerOptionEditor" as answerEditor
-      component "QuizConfigComponent" as quizConfig
-      component "PresetSelectorComponent" as presetSelector
-      component "ImportExportComponent" as importExport
-    }
-
-    package "/session/:code/control (Dozent)" as sessionControl {
-      component "LobbyViewComponent" as lobby
-      component "QuizControlComponent" as control
-      component "ParticipantListComponent" as partList
-      component "QaModeratorComponent" as qaMod
-    }
-
-    package "/session/:code/present (Beamer)" as presenter {
-      component "PresenterViewComponent" as beamer
-      component "QuestionDisplayComponent" as questionDisplay
-      component "ResultChartComponent" as resultChart
-      component "LeaderboardComponent" as leaderboard
-      component "TeamLeaderboardComponent" as teamLeaderboard
-      component "EmojiOverlayComponent" as emojiOverlay
-    }
-
-    package "/join/:code (Student)" as student {
-      component "NicknameSelectComponent" as nickSelect
-      component "VotingViewComponent" as voting
-      component "AnswerButtonComponent" as answerBtn
-      component "RatingScaleComponent" as ratingScale
-      component "FreetextInputComponent" as freetextInput
-      component "PersonalScorecardComponent" as scorecard
-      component "EmojiReactionBarComponent" as emojiBar
-      component "QaStudentComponent" as qaStudent
-    }
-
-    package "/legal (Öffentlich)" as legal {
-      component "ImprintComponent" as imprint
-      component "PrivacyComponent" as privacy
-    }
-  }
-
-  package "Services (DI)" as services #e3f2fd {
-    component "trpc.client.ts" as trpcClient <<tRPC Proxy>>
-    component "YjsService" as yjs <<Yjs + IndexedDB>>
-    component "ThemeService" as themeSvc <<localStorage>>
-    component "I18nService" as i18nSvc <<ngx-translate>>
-    component "AudioService" as audioSvc <<Web Audio API>>
-    component "MotivationService" as motivSvc <<Clientseitig>>
-  }
+skinparam component {
+  BackgroundColor #FEFEFE
+  BorderColor #333333
 }
 
-' ─── Externe Abhängigkeiten ──────────────────────────────────────────────────
+title arsnova.click V3 — Frontend-Architektur (Angular 19)\nStandalone Components · Signals · Tailwind CSS
 
-cloud "Backend\n(tRPC API)" as backend #fff3e0
-database "IndexedDB\n(Yjs CRDT)" as indexeddb #fce4ec
-node "WebSocket\n(tRPC Subscriptions)" as ws #e8eaf6
+' ─── Root ────────────────────────────────────────────────────────────────────
+
+package "Root" #e0e0e0 {
+  [AppComponent] as app
+  [app.routes.ts] as routes
+  [app.config.ts] as config
+}
+
+' ─── Shared Components ───────────────────────────────────────────────────────
+
+package "Shared Components" #e8f5e9 {
+  [HeaderComponent] as header
+  [FooterComponent] as footer
+  [ThemeSwitcherComponent\n(Light/Dark/System)] as theme
+  [LanguageSwitcherComponent\n(de/en/fr/it/es)] as lang
+  [CountdownComponent\n(Kreis + Puls letzte 5s)] as countdown
+  [MarkdownKatexComponent\n(marked + katex)] as mdkatex
+  [ConfirmDialogComponent] as confirm
+}
+
+' ─── Route: Home ─────────────────────────────────────────────────────────────
+
+package "Home  /" #e3f2fd {
+  [HomePageComponent] as home
+  [ServerStatusWidget\n(Story 0.4: healthy/busy/overloaded)] as status
+  [JoinInputComponent\n(6-stelliger Code)] as join
+}
+
+' ─── Route: Quiz-Verwaltung ──────────────────────────────────────────────────
+
+package "Quiz-Verwaltung  /quiz" #e8f5e9 {
+  [QuizListComponent\n(Kontextmenü: ⋮)] as quizlist
+  [QuizEditorComponent\n(Name, Beschreibung, Config)] as editor
+  [QuizConfigComponent\n(Toggles + bonusTokenCount)] as quizconfig
+  [QuizPresetSelector\n(🎮 Spielerisch / 🎓 Seriös)] as presets
+  [QuestionEditorComponent\n(MC/SC/Freitext/Rating/Survey)] as questionedit
+  [AnswerEditorComponent\n(isCorrect-Toggle)] as answeredit
+  [ScFormatDropdown\n(Ja/Nein, Wahr/Falsch, A/B/C/D)] as scformat
+  [RatingConfigComponent\n(Min/Max/Labels)] as ratingconfig
+  [ImportExportComponent\n(JSON, Zod-Validierung)] as importexport
+  [QuizPreviewComponent\n(Story 1.13: Vollbild-Vorschau)] as preview
+  [PreviewHotkeyHandler\n(→←NP Home End 1-9 E Esc)] as hotkeys
+  [PreviewInlineEditor\n(Klick → Inline-Edit)] as inlineedit
+  [ValidationOverlay\n(⚠️ Fehler + ✅ Bereit)] as validation
+}
+
+note right of scformat
+  **Story 1.12:** SC_FORMAT_PRESETS
+  YES_NO, YES_NO_MAYBE,
+  YES_NO_DONT_KNOW,
+  TRUE_FALSE, ABCD
+  Rein clientseitig, i18n-lokalisiert.
+end note
+
+note right of preview
+  **Story 1.13:** Quiz-Preview-Modus
+  Hotkeys: →/N ←/P Home End 1-9 E Esc
+  Swipe-Navigation auf Mobile
+  Inline-Schnellkorrektur → Yjs-Sync
+  Validierungs-Overlay am unteren Rand
+end note
+
+' ─── Route: Session-Steuerung (Dozent) ───────────────────────────────────────
+
+package "Session-Steuerung (Dozent)  /session/:code" #fff3e0 {
+  [LobbyComponent\n(Teilnehmer-Liste, Counter)] as lobby
+  [QuizControlComponent\n(Nächste Frage / Countdown / Ergebnis)] as control
+  [QaModeratorComponent\n(Pin/Archiv/Löschen/Moderation)] as qamoderator
+  [BonusTokenListComponent\n(Story 4.6: Tabelle + CSV-Export)] as tokenlist
+}
+
+note right of tokenlist
+  **Story 4.6:** session.getBonusTokens()
+  Token, Pseudonym, Score, Rang, Datum
+  CSV-Download clientseitig.
+end note
+
+' ─── Route: Beamer-Ansicht ───────────────────────────────────────────────────
+
+package "Beamer  /session/:code/present" #fff9c4 {
+  [BeamerViewComponent\n(Vollbild, große Schrift)] as beamer
+  [ResultChartComponent\n(Balken animiert, 300ms)] as chart
+  [WordcloudComponent\n(Freitext ≥ 10)] as wordcloud
+  [RatingHistogramComponent\n(Verteilung + Ø + σ)] as histogram
+  [LeaderboardComponent\n(Top 5, Team-Leaderboard)] as leaderboard
+  [EmojiOverlayComponent\n(aufsteigende Blasen)] as emojioverlay
+  [QrCodeComponent] as qrcode
+}
+
+' ─── Route: Student-Ansicht ──────────────────────────────────────────────────
+
+package "Student  /session/:code/vote" #e3f2fd {
+  [NicknameSelectComponent\n(Themes × 50+ Namen)] as nickname
+  [VotingViewComponent\n(Signal-basiert)] as voting
+  [AnswerButtonsComponent\n(△○□◇ Farb+Form-Codierung)] as buttons
+  [McToggleButtonsComponent\n(Mehrfachauswahl + Absenden)] as mctoggle
+  [RatingScaleComponent\n(horizontal, 1 Tap)] as ratingscale
+  [FreetextInputComponent\n(Platzhalter + Absenden)] as freetext
+  [ScorecardComponent\n(Bottom-Sheet Overlay)] as scorecard
+  [BonusTokenDisplay\n(Story 4.6: Token kopieren)] as tokendisplay
+  [MotivationMessageComponent\n(kontextbezogen, i18n)] as motivation
+  [EmojiBarComponent\n(👏 🎉 😮 😂 😢)] as emojibar
+  [QaStudentComponent\n(Frage + Upvote-Toggle)] as qastudent
+}
+
+note right of tokendisplay
+  **Story 4.6:** "🎓 Dein Bonus-Token: BNS-A3F7-K2M9"
+  Kopier-Button → navigator.clipboard.writeText
+  Nur für Top-X sichtbar (onPersonalResult).
+end note
+
+note left of buttons
+  **Story 3.3b:** Vollbreite, gestapelt.
+  Thumb Zone (unteres Drittel).
+  48×48px Touch-Targets. Debounce 300ms.
+  Vibration API. Optimistisches UI-Update.
+  Beamer: 2×2-Grid (≤4) oder Liste (≥5).
+end note
+
+' ─── Route: Legal ────────────────────────────────────────────────────────────
+
+package "Legal  /legal" #f3e5f5 {
+  [ImprintComponent\n(Markdown, TMG)] as imprint
+  [PrivacyComponent\n(Markdown, DSGVO Art. 6)] as privacy
+}
+
+' ─── Services ────────────────────────────────────────────────────────────────
+
+package "Services (Injectable)" #fce4ec {
+  [trpcClient\n(httpBatchLink + wsLink)] as trpc
+  [YjsService\n(IndexedDB + y-websocket)] as yjs
+  [ThemeService\n(Signal: light/dark/system)] as themesvc
+  [I18nService\n(de/en/fr/it/es)] as i18nsvc
+  [AudioService\n(Web Audio API)] as audiosvc
+  [MotivationService\n(clientseitige Regelengine)] as motivsvc
+  [ClipboardService\n(navigator.clipboard)] as clipsvc
+}
+
+' ─── Externe Systeme ─────────────────────────────────────────────────────────
+
+cloud "Backend (tRPC)" as backend
+database "IndexedDB\n(Yjs CRDT)" as idb
+cloud "WebSocket\n(tRPC Subscriptions)" as ws
 
 ' ─── Verbindungen ────────────────────────────────────────────────────────────
 
-trpcClient  --> backend     : HTTP Batch\n(Queries / Mutations)
-trpcClient  --> ws          : WebSocket\n(Subscriptions)
-yjs         --> indexeddb   : Local-First\nCRDT Sync
-yjs         --> ws          : y-websocket\nMulti-Device Sync
-
-root --> header
-root --> footer
+app --> routes
+app --> header
+app --> footer
 header --> theme
 header --> lang
 
-homeComp --> serverStatus
-homeComp --> joinInput
+home --> status
+home --> join
 
-quizEditor --> questionForm
-quizEditor --> quizConfig
-quizConfig --> presetSelector
-questionForm --> answerEditor
-questionForm --> mdkatex
+quizlist --> editor
+editor --> quizconfig
+editor --> questionedit
+editor --> importexport
+editor --> preview
+quizconfig --> presets
+questionedit --> answeredit
+questionedit --> ratingconfig
+questionedit --> scformat
+questionedit --> mdkatex
+preview --> hotkeys
+preview --> inlineedit
+preview --> validation
+preview --> mdkatex
 
-voting --> answerBtn
-voting --> ratingScale
-voting --> freetextInput
+lobby --> control
+control --> beamer
+control --> tokenlist
+
+beamer --> chart
+beamer --> wordcloud
+beamer --> histogram
+beamer --> leaderboard
+beamer --> emojioverlay
+beamer --> qrcode
+beamer --> countdown
+
+voting --> buttons
+voting --> mctoggle
+voting --> ratingscale
+voting --> freetext
 voting --> countdown
 voting --> scorecard
-voting --> emojiBar
-answerBtn --> mdkatex
+scorecard --> tokendisplay
+scorecard --> motivation
+voting --> emojibar
 
-beamer --> questionDisplay
-beamer --> resultChart
-beamer --> leaderboard
-beamer --> teamLeaderboard
-beamer --> emojiOverlay
-beamer --> countdown
-questionDisplay --> mdkatex
+trpc --> backend
+trpc --> ws
+yjs --> idb
+audiosvc --> beamer
+clipsvc --> tokendisplay
 
-lobby --> partList
-
-note right of trpcClient
-  100% End-to-End Typsicherheit:
-  importiert **AppRouter** direkt
-  aus dem Backend-Monorepo
-  via tsconfig path alias.
+note bottom of trpc
+  **tRPC-Links:**
+  httpBatchLink → Queries & Mutations
+  wsLink → Subscriptions (Echtzeit)
+  Ende-zu-Ende typsicher mit Zod.
 end note
 
-note right of yjs
-  Quizzes leben primär
-  in IndexedDB (Local-First).
-  Server = dummer Relay
-  für Multi-Device-Sync.
-end note
-
-note bottom of answerBtn
-  △ A / ○ B / □ C / ◇ D
-  Vollbreite Buttons, Thumb Zone,
-  Debounce 300ms, optimistisches UI
+note bottom of yjs
+  **Local-First (ADR-0004):**
+  Kein Account nötig.
+  Quiz-Daten → IndexedDB via Yjs.
+  Optional: y-websocket Multi-Device-Sync.
 end note
 
 @enduml

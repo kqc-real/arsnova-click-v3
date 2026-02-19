@@ -1,7 +1,8 @@
 @startuml comm-dozent-client
 ' ============================================================================
-' arsnova.click V3 – Kommunikationsdiagramm: Dozent-Client ↔ Backend
+' arsnova.click V3 – Kommunikationsdiagramm: Dozent-Client <-> Backend
 ' Protokolle: HTTP (tRPC Queries/Mutations), WebSocket (tRPC Subscriptions)
+' Stand: 2026-02-19 · inkl. Story 1.12, 1.13, 4.6
 ' ============================================================================
 
 !theme plain
@@ -10,11 +11,12 @@ skinparam sequenceMessageAlign center
 skinparam responseMessageBelowArrow true
 skinparam maxMessageSize 220
 
-title Dozent-Client ↔ Backend – Kommunikation\n(tRPC HTTP + WebSocket)
+title Dozent-Client <-> Backend – Kommunikation\n(tRPC HTTP + WebSocket)
 
-actor "🎓 Dozent" as dozent
+actor "Dozent" as dozent
 box "Browser (Angular)" #e8f5e9
   participant "QuizEditor\n(Local-First)" as editor
+  participant "PreviewMode\n(Story 1.13)" as preview
   participant "tRPC Client\n(httpBatchLink)" as http
   participant "tRPC Client\n(wsLink)" as ws
   participant "Yjs\n(IndexedDB)" as yjs
@@ -23,6 +25,7 @@ end box
 box "Backend (Node.js)" #fff3e0
   participant "tRPC Router\n(Express)" as router
   participant "WebSocket\nServer" as wss
+  participant "BonusToken\nService" as tokensvc
   participant "y-websocket\nRelay" as yws
 end box
 
@@ -31,21 +34,49 @@ database "Redis" as redis
 
 == Phase 1: Quiz erstellen (Local-First — kein Server!) ==
 
-dozent -> editor : Quiz anlegen &\nFragen hinzufügen
+dozent -> editor : Quiz anlegen &\nFragen hinzufuegen
 editor -> yjs : Yjs-Doc speichern
 yjs -> yjs : IndexedDB persistieren
 note right of yjs : Kein Server-Roundtrip!\nAlles lokal im Browser.
 
-opt Multi-Device-Sync (Story 0.3 / 1.6)
-  yjs -> yws : CRDT-Deltas\n(WebSocket)
-  yws -> yjs : Sync zurück\nan Gerät B
+opt SC-Schnellformat (Story 1.12)
+  dozent -> editor : SC-Frage erstellen
+  editor -> editor : ScFormatDropdown\n(Ja/Nein, Wahr/Falsch, ABCD)
+  editor -> yjs : Antworten aus\nSC_FORMAT_PRESETS einfuegen
 end
 
-== Phase 2: Quiz live schalten ==
+opt Multi-Device-Sync (Story 0.3 / 1.6)
+  yjs -> yws : CRDT-Deltas\n(WebSocket)
+  yws -> yjs : Sync zurueck\nan Geraet B
+end
+
+== Phase 2: Quiz-Preview & Schnellkorrektur (Story 1.13) ==
+
+dozent -> preview : Preview oeffnen (Augen-Icon)
+preview -> yjs : Quiz-Daten lesen
+preview -> preview : Frage rendern\n(Markdown/KaTeX, Buttons,\nisCorrect mit Haekchen)
+
+dozent -> preview : Hotkeys: ->/N naechste\n<-/P vorherige\nHome/End/1-9 Sprung
+
+opt Validierungsprobleme gefunden
+  preview -> dozent : Warnung: "Frage 5:\nKeine korrekte Antwort"
+  dozent -> preview : Warnung anklicken\n-> zur Frage springen
+end
+
+opt Inline-Schnellkorrektur
+  dozent -> preview : Text klicken oder\nHotkey E -> Inline-Edit
+  preview -> yjs : Aenderung sofort speichern\n(Debounce 300ms)
+  dozent -> preview : isCorrect-Haekchen togglen
+  preview -> yjs : isCorrect invertiert\n-> Yjs-Sync
+end
+
+preview -> dozent : "Alle Fragen valide\n— bereit zum Live-Schalten"
+
+== Phase 3: Quiz live schalten ==
 
 dozent -> editor : "Live schalten" klicken
 editor -> yjs : Quiz-Daten\naus IndexedDB lesen
-editor -> http : **quiz.upload()**\n//QuizUploadInputSchema//\n(Name, Config, Fragen,\nAntworten inkl. isCorrect)
+editor -> http : **quiz.upload()**\n//QuizUploadInputSchema//\n(inkl. bonusTokenCount)
 http -> router : HTTP POST /trpc
 router -> pg : Quiz + Questions +\nAnswerOptions INSERT
 router --> http : { quizId }
@@ -57,23 +88,23 @@ router --> http : { sessionId, code: "A3F7K2" }
 
 editor -> ws : **Subscribe:**\nsession.onParticipantJoined\nsession.onStatusChanged
 ws -> wss : WebSocket CONNECT
-note over ws, wss : Persistente WS-Verbindung\nfür alle Echtzeit-Events
+note over ws, wss : Persistente WS-Verbindung\nfuer alle Echtzeit-Events
 
-dozent -> editor : Beamer-Ansicht öffnen\n(/session/A3F7K2/present)
+dozent -> editor : Beamer-Ansicht oeffnen\n(/session/A3F7K2/present)
 
-== Phase 3: Lobby — Teilnehmer treten bei ==
+== Phase 4: Lobby — Teilnehmer treten bei ==
 
 wss -> ws : **Event: onParticipantJoined**\n//ParticipantDTO//\n{ id, nickname: "Marie Curie" }
 ws -> editor : Signal update
-editor -> dozent : 👤 "Marie Curie"\nin Lobby anzeigen
+editor -> dozent : "Marie Curie"\nin Lobby anzeigen
 
 wss -> ws : **Event: onParticipantJoined**\n//ParticipantDTO//\n{ id, nickname: "Albert Einstein" }
 ws -> editor : Signal update
-editor -> dozent : 👤 +1 Teilnehmer\n(Live-Counter)
+editor -> dozent : +1 Teilnehmer\n(Live-Counter)
 
-== Phase 4: Frage freigeben ==
+== Phase 5: Frage freigeben ==
 
-dozent -> editor : "Nächste Frage" klicken ▶️
+dozent -> editor : "Naechste Frage" klicken
 editor -> http : **session.nextQuestion()**\n{ sessionId }
 http -> router : HTTP POST /trpc
 router -> pg : currentQuestion++\nStatus = ACTIVE
@@ -82,30 +113,30 @@ router --> http : ok
 
 note over router
   Server erstellt **QuestionStudentDTO**:
-  ⚠️ isCorrect wird ENTFERNT!
+  isCorrect wird ENTFERNT!
   Nur id, text, type, timer, answers[{id, text}]
 end note
 
 router -> wss : Push an alle Clients
 note right of wss : Broadcast via Redis Pub/Sub\nan Dozent + alle Studenten
 
-== Phase 5: Live-Voting beobachten ==
+== Phase 6: Live-Voting beobachten ==
 
 wss -> ws : **Event: voteCountUpdate**\n{ questionId, totalVotes: 12 }
 ws -> editor : Signal update
-editor -> dozent : Abstimmungsbalken\nlive aktualisieren 📊
+editor -> dozent : Abstimmungsbalken\nlive aktualisieren
 
-== Phase 6: Ergebnis auflösen ==
+== Phase 7: Ergebnis aufloesen ==
 
-dozent -> editor : "Ergebnis zeigen" klicken 📈
+dozent -> editor : "Ergebnis zeigen" klicken
 editor -> http : **session.revealResults()**\n{ sessionId }
 http -> router : HTTP POST /trpc
 router -> pg : Status = RESULTS
-router -> pg : Scores berechnen\n(Difficulty × TimeBonus × Streak)
+router -> pg : Scores berechnen\n(Difficulty * TimeBonus * Streak)
 
 note over router
-  Server erstellt jetzt **QuestionRevealedDTO**:
-  ✅ isCorrect ist ENTHALTEN!
+  Server erstellt **QuestionRevealedDTO**:
+  isCorrect ist ENTHALTEN!
   + voteCount, votePercentage pro Option
 end note
 
@@ -114,42 +145,60 @@ router -> redis : PUBLISH Ergebnisse
 
 wss -> ws : **Event: onResultsRevealed**\n//QuestionRevealedDTO//\n{ answers: [{ isCorrect: true, voteCount: 8 }] }
 ws -> editor : Signal update
-editor -> dozent : Ergebnis-Diagramm\nauf Beamer anzeigen 📊
+editor -> dozent : Ergebnis-Diagramm\nauf Beamer anzeigen
 
 opt Leaderboard aktiv (showLeaderboard=true)
   editor -> http : **session.getLeaderboard()**\n{ sessionId }
   http -> router : HTTP GET /trpc
   router -> pg : Scores aggregieren
   router --> http : //LeaderboardEntryDTO[]//\n[{ rank: 1, nickname, totalScore }]
-  editor -> dozent : Top 5 auf\nBeamer anzeigen 🏆
+  editor -> dozent : Top 5 auf\nBeamer anzeigen
 end
 
 opt Emoji-Reaktionen aktiv
-  wss -> ws : **Event: onEmojiReaction**\n{ emoji: "🎉", count: 5 }
+  wss -> ws : **Event: onEmojiReaction**\n{ emoji: "Konfetti", count: 5 }
   ws -> editor : Signal update
-  editor -> dozent : Emoji-Blasen\nauf Beamer animieren 🎉
+  editor -> dozent : Emoji-Blasen\nauf Beamer animieren
 end
 
-== Phase 7: Nächste Frage (Schleife) ==
+== Phase 8: Naechste Frage (Schleife) ==
 
-dozent -> editor : "Nächste Frage" ▶️
+dozent -> editor : "Naechste Frage"
 editor -> http : **session.nextQuestion()**
 note over editor : Schleife wiederholt sich\nbis alle Fragen durch sind
 
-== Phase 8: Quiz beenden ==
+== Phase 9: Quiz beenden + Bonus-Token (Story 4.6) ==
 
-dozent -> editor : "Quiz beenden" 🏁
+dozent -> editor : "Quiz beenden"
 editor -> http : **session.end()**\n{ sessionId }
 http -> router : HTTP POST /trpc
 router -> pg : Status = FINISHED
-router -> redis : DEL session:A3F7K2:*\n(Redis-Keys löschen ♻️)
+
+opt bonusTokenCount > 0 (Story 4.6)
+  router -> tokensvc : Top-X ermitteln\n+ Token generieren
+  tokensvc -> pg : BonusToken INSERT\n(BNS-A3F7-K2M9, nickname,\nquizName, score, rank)
+  tokensvc -> wss : Push **onPersonalResult**\nmit bonusToken (nur an Top-X)
+end
+
+router -> redis : DEL session:A3F7K2:*\n(Redis-Keys loeschen)
 router -> wss : Push **onStatusChanged**\n{ status: "FINISHED" }
 router --> http : ok
 
 editor -> http : **session.getLeaderboard()**
 http -> router : HTTP GET /trpc
 router --> http : //LeaderboardEntryDTO[]//\n(finales Ranking)
-editor -> dozent : Finales Leaderboard\n+ Belohnungseffekte 🏆🎉
+editor -> dozent : Finales Leaderboard\n+ Belohnungseffekte
+
+opt bonusTokenCount > 0 (Story 4.6)
+  editor -> http : **session.getBonusTokens()**\n{ sessionId }
+  http -> router : HTTP GET /trpc
+  router -> pg : SELECT BonusToken\nWHERE sessionId = ...
+  router --> http : //BonusTokenListDTO//\n{ tokens: [{ token, nickname,\nquizName, score, rank, date }] }
+  editor -> dozent : Token-Tabelle anzeigen\n(Pseudonym, Score, Rang, Datum)
+
+  dozent -> editor : "CSV exportieren"
+  editor -> editor : Clientseitiger Download\n(token-liste.csv)
+end
 
 wss -> ws : Verbindung geschlossen
 ws -> editor : Cleanup
@@ -167,7 +216,7 @@ wss -> ws : **Event: onQuestionsUpdated**\n//QaQuestionDTO[]//\n[{ text, upvoteC
 ws -> editor : Signal update
 editor -> dozent : Q&A-Liste\nsortiert nach Upvotes
 
-dozent -> editor : Frage pinnen 📌
+dozent -> editor : Frage pinnen
 editor -> http : **qa.moderate()**\n{ questionId, action: "PIN" }
 http -> router : HTTP POST /trpc
 router -> pg : status = PINNED
