@@ -59,7 +59,7 @@ COPY --from=builder /app/apps/backend/dist apps/backend/dist
 COPY --from=builder /app/libs/shared-types libs/shared-types
 
 # Copy Angular build output (served by Express as static files)
-COPY --from=builder /app/apps/frontend/dist/frontend/browser apps/frontend/dist
+COPY --from=builder /app/apps/frontend/dist/browser apps/frontend/dist
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
