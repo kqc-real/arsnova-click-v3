@@ -31,6 +31,7 @@
 | 1 | 1.10 | Quiz bearbeiten & löschen | 🔴 | ⬜ Offen |
 | 1 | 1.11 | Quiz-Presets | 🟡 | ⬜ Offen |
 | 1 | 1.12 | SC-Schnellformate | 🟡 | ⬜ Offen |
+| 1 | 1.13 | Quiz-Preview & Schnellkorrektur | 🟡 | ⬜ Offen |
 | 2 | 2.1a | Session-ID & Quiz-Upload | 🔴 | ⬜ Offen |
 | 2 | 2.1b | QR-Code | 🟢 | ⬜ Offen |
 | 2 | 2.2 | Lobby-Ansicht | 🔴 | ⬜ Offen |
@@ -49,6 +50,7 @@
 | 4 | 4.3 | WebSocket Reconnection | 🟡 | ⬜ Offen |
 | 4 | 4.4 | Ergebnis-Visualisierung | 🔴 | ⬜ Offen |
 | 4 | 4.5 | Freitext-Auswertung | 🟡 | ⬜ Offen |
+| 4 | 4.6 | Bonus-Token für Top-Platzierungen | 🟡 | ⬜ Offen |
 | 5 | 5.1 | Sound-Effekte | 🟡 | ⬜ Offen |
 | 5 | 5.3 | Hintergrundmusik | 🟢 | ⬜ Offen |
 | 5 | 5.4 | Belohnungseffekte | 🟡 | ⬜ Offen |
@@ -69,7 +71,7 @@
 
 > **Legende Status:** ⬜ Offen · 🔨 In Arbeit · ✅ Fertig (DoD erfüllt) · ❌ Blockiert
 >
-> **Statistik:** 🔴 Must: 22 · 🟡 Should: 19 · 🟢 Could: 13 = **54 Storys gesamt**
+> **Statistik:** 🔴 Must: 22 · 🟡 Should: 21 · 🟢 Could: 13 = **56 Storys gesamt**
 
 ---
 
@@ -281,6 +283,41 @@ Eine Story gilt als **fertig**, wenn **alle** folgenden Kriterien erfüllt sind:
     - [ ] Ein Quiz, das gerade live ist (offene Session), kann nicht gelöscht werden — der Löschen-Button ist ausgegraut mit Tooltip-Hinweis.
     - [ ] Alle Operationen erfolgen rein clientseitig (Local-First).
 
+* **Story 1.13 (Quiz-Preview & Schnellkorrektur):** 🟡 Als Dozent möchte ich mein Quiz vor dem Live-Schalten in einer Vorschau durchblättern und dabei Fehler direkt per Inline-Bearbeitung korrigieren können, damit ich Tippfehler und falsche Markierungen schnell finde und behebe — unterstützt durch Hotkeys für flüssige Navigation.
+  * **Akzeptanzkriterien:**
+    - [ ] In der Quiz-Detailansicht gibt es einen **„Preview"-Button** (Augen-Icon 👁️), der den Preview-Modus öffnet.
+    - [ ] **Vollbild-Preview:**
+      - [ ] Jede Frage wird so angezeigt, wie sie später auf dem Studenten-Gerät erscheinen würde (Markdown/KaTeX gerendert, Antwort-Buttons mit Farb- und Formencodierung △○□◇).
+      - [ ] Die korrekte(n) Antwort(en) werden zusätzlich mit einem grünen Häkchen (✓) markiert, damit der Dozent die Lösung sofort sieht.
+      - [ ] Bei RATING-Fragen wird die Skala mit Labels angezeigt; bei FREETEXT-Fragen ein Platzhalter-Textfeld.
+      - [ ] Am oberen Rand: Fortschrittsbalken (z. B. „Frage 3 / 12") + Fragentyp-Badge (MC/SC/Freitext/Rating/Umfrage) + Schwierigkeits-Badge (Easy/Medium/Hard).
+    - [ ] **Hotkey-Navigation (Tastatursteuerung):**
+      - [ ] `→` oder `N` — Nächste Frage
+      - [ ] `←` oder `P` — Vorherige Frage
+      - [ ] `Home` — Zur ersten Frage springen
+      - [ ] `End` — Zur letzten Frage springen
+      - [ ] `1`–`9` — Direkt zur Frage Nr. 1–9 springen
+      - [ ] `E` — Inline-Bearbeitung für die aktuelle Frage öffnen (Toggle)
+      - [ ] `Esc` — Preview-Modus verlassen / Inline-Bearbeitung abbrechen
+    - [ ] **Inline-Schnellkorrektur:**
+      - [ ] Per Klick auf den Fragentext, einen Antworttext oder das `isCorrect`-Häkchen wechselt das jeweilige Element in einen editierbaren Zustand (Inline-Edit).
+      - [ ] Alternativ: Hotkey `E` aktiviert die Bearbeitung der gesamten aktuellen Frage.
+      - [ ] Änderungen werden sofort in Yjs/IndexedDB gespeichert (Local-First, kein Save-Button nötig).
+      - [ ] Markdown-Preview aktualisiert sich live bei Textänderungen (Debounce ≤ 300 ms).
+      - [ ] `isCorrect`-Toggle: Ein Klick auf das Häkchen einer Antwort invertiert den Korrekt-Status sofort.
+    - [ ] **Swipe-Navigation (Mobile):**
+      - [ ] Auf Touch-Geräten kann zwischen Fragen durch horizontales Wischen gewechselt werden (Swipe left = nächste, Swipe right = vorherige).
+      - [ ] Swipe-Geste wird mit einer kurzen Slide-Animation (150 ms) visuell bestätigt.
+    - [ ] **Validierungs-Overlay:**
+      - [ ] Am unteren Rand zeigt ein kompakter Validierungs-Balken Probleme an, z. B.:
+        - [ ] ⚠️ „Frage 5: Keine korrekte Antwort markiert"
+        - [ ] ⚠️ „Frage 8: Weniger als 2 Antwortoptionen"
+        - [ ] ⚠️ „Frage 3: Timer fehlt (Quiz-Default wird verwendet)"
+      - [ ] Klick auf eine Warnung springt direkt zur betroffenen Frage.
+      - [ ] Wenn keine Probleme: ✅ „Alle Fragen valide — bereit zum Live-Schalten".
+    - [ ] Das Feature ist rein clientseitig (kein Server-Roundtrip).
+    - [ ] Abhängigkeiten: Story 1.7 (Markdown/KaTeX), Story 1.2a–c (Fragentypen), Story 1.5 (Local-First).
+
 ---
 
 ## Epic 2: Live-Sitzung & Lobby (Rolle: Dozent)
@@ -455,6 +492,37 @@ Eine Story gilt als **fertig**, wenn **alle** folgenden Kriterien erfüllt sind:
     - [ ] Frontend erkennt Verbindungsabbruch und zeigt Hinweis an.
     - [ ] Automatischer Reconnect-Versuch (Exponential Backoff).
     - [ ] Nach Reconnect wird der aktuelle Session-Zustand synchronisiert.
+
+* **Story 4.6 (Bonus-Token für Top-Platzierungen):** 🟡 Als Dozent möchte ich den besten Studenten im Leaderboard ein individuelles Bonus-Token ausstellen können, das diese per E-Mail zur Einlösung von Bonuspunkten (z. B. Klausurzulassung) einreichen, damit herausragende Leistungen belohnt werden — ohne die Anonymität der restlichen Teilnehmer zu gefährden.
+  * **Akzeptanzkriterien:**
+    - [ ] In der Quiz-Konfiguration (Story 1.4) gibt es ein neues optionales Feld **`bonusTokenCount`** (`Int?, 1–50, default: null`). Wenn gesetzt, erhalten die Top X im finalen Leaderboard automatisch ein Token.
+    - [ ] **Token-Generierung (serverseitig):**
+      - [ ] Beim Beenden der Session (`session.end`) werden für die Top X Plätze kryptografisch sichere, einmalige Token generiert (`crypto.randomUUID()` oder `nanoid`, 12 Zeichen, z. B. `BNS-A3F7-K2M9`).
+      - [ ] Jedes Token wird als `BonusToken`-Datensatz in PostgreSQL gespeichert mit: `token`, `sessionId`, `participantId`, `nickname` (Snapshot), `quizName` (Snapshot), `totalScore`, `rank`, `generatedAt`.
+      - [ ] Token sind nach Generierung unveränderlich (kein Update, keine Regeneration).
+    - [ ] **Studenten-Ansicht:**
+      - [ ] Die Top-X-Studenten sehen auf ihrer finalen Scorecard (Story 5.6) zusätzlich einen hervorgehobenen Bereich: **„🎓 Dein Bonus-Token: `BNS-A3F7-K2M9`"**.
+      - [ ] Ein „Kopieren"-Button kopiert das Token in die Zwischenablage (`navigator.clipboard.writeText`).
+      - [ ] Ein erklärender Hinweis: _„Sende dieses Token per E-Mail an deinen Dozenten, um Bonuspunkte zu erhalten. Deine Anonymität bleibt gewahrt, solange du das Token nicht einreichst."_
+      - [ ] Das Token wird **nur** dem jeweiligen Studenten angezeigt (individuell per tRPC-Subscription `session.onPersonalResult`, kein Broadcast).
+      - [ ] Studenten, die nicht in den Top X sind, sehen keinen Token-Bereich.
+    - [ ] **Dozenten-Ansicht (Token-Verwaltung):**
+      - [ ] Nach Beendigung der Session kann der Dozent über einen neuen tRPC-Query **`session.getBonusTokens({ sessionId })`** die vollständige Token-Liste abrufen.
+      - [ ] Die Liste enthält pro Eintrag: Token-Code, Pseudonym (Nickname), Quiz-Name, erreichte Punkte, Ranking-Platz, Datum.
+      - [ ] Die Liste ist als Tabelle dargestellt und kann als **CSV exportiert** werden (clientseitiger Download).
+      - [ ] Der Dozent sieht **keine** echten Namen oder E-Mail-Adressen — nur Pseudonyme.
+    - [ ] **Verifizierungs-Workflow (außerhalb der App):**
+       - [ ] Studenten senden ihr Token per E-Mail an den Dozenten.
+       - [ ] Der Dozent gleicht das Token mit der CSV-/Tabellenliste ab und schreibt anhand der Absender-Mailadresse Bonuspunkte gut.
+       - [ ] Die App selbst speichert keine E-Mail-Adressen (DSGVO-konform, Prinzip der Datensparsamkeit).
+    - [ ] **Anonymitätsgarantie:**
+      - [ ] Die Zuordnung Token → reale Person ist **nur** möglich, wenn der Student sein Token freiwillig per E-Mail einreicht.
+      - [ ] Studenten, die nicht einreichen, bleiben vollständig anonym — auch gegenüber dem Dozenten.
+      - [ ] Im anonymen Modus (Story 3.6) werden Tokens dennoch generiert (Pseudonym = „Teilnehmer #7"), da die Einreichung per E-Mail die freiwillige De-Anonymisierung darstellt.
+    - [ ] **Gültigkeit & Cleanup:**
+      - [ ] Bonus-Tokens bleiben 90 Tage in der Datenbank gespeichert, danach werden sie automatisch gelöscht (Erweiterung von Story 4.2).
+      - [ ] Tokens sind nicht übertragbar — der Dozent prüft den Absender der E-Mail eigenverantwortlich.
+    - [ ] **Abhängigkeiten:** Story 4.1 (Leaderboard), Story 5.6 (Persönliche Scorecard).
 
 ---
 

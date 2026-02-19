@@ -99,6 +99,7 @@ export const CreateQuizInputSchema = z.object({
   teamAssignment: TeamAssignmentEnum.optional().default('AUTO'),
   backgroundMusic: z.string().max(50).nullable().optional().default(null),
   nicknameTheme: NicknameThemeEnum.optional().default('NOBEL_LAUREATES'),
+  bonusTokenCount: z.number().int().min(1).max(50).nullable().optional().default(null), // Story 4.6
 });
 
 export type CreateQuizInput = z.infer<typeof CreateQuizInputSchema>;
@@ -142,6 +143,7 @@ export const QuizUploadInputSchema = z.object({
   teamAssignment: TeamAssignmentEnum.optional(),
   backgroundMusic: z.string().max(50).nullable().optional(),
   nicknameTheme: NicknameThemeEnum,
+  bonusTokenCount: z.number().int().min(1).max(50).nullable().optional(), // Story 4.6
   questions: z.array(AddQuestionInputSchema).min(1, 'Mindestens eine Frage erforderlich'),
 });
 export type QuizUploadInput = z.infer<typeof QuizUploadInputSchema>;
@@ -280,6 +282,7 @@ export const PersonalScorecardDTOSchema = z.object({
   previousRank: z.number().nullable(), // Rang nach vorheriger Frage (null bei 1. Frage)
   rankChange: z.number(),            // Differenz (positiv = aufgestiegen)
   totalScore: z.number(),            // Gesamtpunktzahl bisher
+  bonusToken: z.string().nullable().optional(), // Story 4.6: Token-Code (nur für Top-X, sonst null)
 });
 export type PersonalScorecardDTO = z.infer<typeof PersonalScorecardDTOSchema>;
 
@@ -372,6 +375,7 @@ export const QuizExportSchema = z.object({
     teamAssignment: TeamAssignmentEnum.optional(),
     backgroundMusic: z.string().max(50).nullable().optional(),
     nicknameTheme: NicknameThemeEnum,
+    bonusTokenCount: z.number().int().min(1).max(50).nullable().optional(), // Story 4.6
     questions: z.array(ExportedQuestionSchema).min(1),
   }),
 });
@@ -394,6 +398,30 @@ export const RatingResultDTOSchema = z.object({
   totalVotes: z.number(),
 });
 export type RatingResultDTO = z.infer<typeof RatingResultDTOSchema>;
+
+// ---------------------------------------------------------------------------
+// Bonus-Token (Story 4.6)
+// ---------------------------------------------------------------------------
+
+/** DTO: Einzelner Bonus-Token-Eintrag in der Dozenten-Liste */
+export const BonusTokenEntryDTOSchema = z.object({
+  token: z.string(),               // z.B. "BNS-A3F7-K2M9"
+  nickname: z.string(),            // Pseudonym (Snapshot)
+  quizName: z.string(),            // Quiz-Name (Snapshot)
+  totalScore: z.number(),          // Erreichte Gesamtpunktzahl
+  rank: z.number(),                // Platzierung (1-basiert)
+  generatedAt: z.string(),         // ISO-8601 Timestamp
+});
+export type BonusTokenEntryDTO = z.infer<typeof BonusTokenEntryDTOSchema>;
+
+/** DTO: Vollständige Bonus-Token-Liste für den Dozenten */
+export const BonusTokenListDTOSchema = z.object({
+  sessionId: z.string().uuid(),
+  sessionCode: z.string(),
+  quizName: z.string(),
+  tokens: z.array(BonusTokenEntryDTOSchema),
+});
+export type BonusTokenListDTO = z.infer<typeof BonusTokenListDTOSchema>;
 
 // ---------------------------------------------------------------------------
 // Q&A-Modus (Epic 8)

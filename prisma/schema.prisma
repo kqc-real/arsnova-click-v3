@@ -36,6 +36,7 @@ model Quiz {
   teamAssignment       TeamAssignment @default(AUTO) // Story 7.1: Teamzuweisung
   backgroundMusic      String?                      // Story 5.3: Track-Name (null = aus)
   nicknameTheme        NicknameTheme @default(NOBEL_LAUREATES) // Story 3.2: Nickname-Liste
+  bonusTokenCount      Int?                         // Story 4.6: Anzahl Top-Plätze mit Bonus-Token (1–50, null = deaktiviert)
   creatorId            String?                      // Optional wegen Local-First USP
   creator              User?      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   questions            Question[]
@@ -88,6 +89,7 @@ model Session {
   participants    Participant[]
   teams           Team[]
   votes           Vote[]
+  bonusTokens     BonusToken[]  // Story 4.6: Bonus-Tokens für Top-Platzierungen
   qaQuestions     QaQuestion[]  // Story 8: Q&A-Fragen
   startedAt       DateTime      @default(now())
   endedAt         DateTime?
@@ -102,6 +104,7 @@ model Participant {
   teamId    String?                                  // Story 7.1: Team-Zugehörigkeit (optional)
   team      Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
   votes      Vote[]
+  bonusTokens BonusToken[] // Story 4.6: Ausgestellte Bonus-Tokens
   qaQuestions QaQuestion[] // Story 8.2: Eingereichte Q&A-Fragen
   qaUpvotes  QaUpvote[]   // Story 8.3: Q&A-Upvotes
   joinedAt   DateTime @default(now())
@@ -193,6 +196,23 @@ enum TeamAssignment {
 enum SessionType {
   QUIZ       // Reguläres Quiz mit Fragen
   Q_AND_A    // Q&A-Modus (Story 8.1)
+}
+
+// ─── Bonus-Token (Story 4.6) ────────────────────────────────────────────────
+
+// Individuelles Token für Top-Platzierungen, einlösbar per E-Mail beim Dozenten
+model BonusToken {
+  id            String      @id @default(uuid())
+  token         String      @unique  // Kryptografisch sicher, z.B. "BNS-A3F7-K2M9"
+  sessionId     String
+  session       Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  participantId String
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  nickname      String      // Snapshot des Pseudonyms zum Zeitpunkt der Generierung
+  quizName      String      // Snapshot des Quiz-Namens
+  totalScore    Int         // Erreichte Gesamtpunktzahl
+  rank          Int         // Platzierung im Leaderboard (1-basiert)
+  generatedAt   DateTime    @default(now())
 }
 
 // ─── Q&A-Modus (Epic 8) ────────────────────────────────────────────────────
