@@ -69,7 +69,7 @@ package "appRouter (tRPC)" #e8f5e9 {
     **Endpoints:**
     vote.submit → Mutation (Story 3.3b)
     Validierung: SubmitVoteInputSchema
-    answerIds[] / freeText / ratingValue
+    answerIds / freeText / ratingValue
   end note
 
   note right of qa
@@ -103,9 +103,9 @@ end note
 
 note right of scoring
   **Punkteformel (Story 4.1):**
-  score = DIFFICULTY_MULTIPLIER[d]
-        × MAX_BASE_POINTS
-        × (1 − responseTime / timer)
+  score = DIFFICULTY_MULTIPLIER(d)
+        x MAX_BASE_POINTS
+        x (1 - responseTime / timer)
   finalScore = score × streakMultiplier
   FREETEXT, SURVEY, RATING = 0 Punkte
 end note
@@ -122,9 +122,9 @@ package "DTO Layer (Data-Stripping)" #fce4ec {
   [LeaderboardEntryDTO] as lbdto
   [PersonalScorecardDTO\n(+ bonusToken: String?)] as scoredto
   [TeamLeaderboardEntryDTO] as teamlbdto
-  [RatingResultDTO\n(distribution, Ø, σ)] as ratingdto
+  [RatingResultDTO\n(distribution, avg, stddev)] as ratingdto
   [BonusTokenEntryDTO\n(token, nickname, score, rank)] as tokenentrydto
-  [BonusTokenListDTO\n(sessionId, code, quizName, tokens[])] as tokenlistdto
+  [BonusTokenListDTO\n(sessionId, code, quizName, tokens)] as tokenlistdto
   [QaQuestionDTO\n(hasUpvoted)] as qadto
   [ServerStatsDTO] as statsdto
 }
@@ -145,7 +145,7 @@ package "Validation (@arsnova/shared-types)" #e3f2fd {
   [QuizUploadInputSchema\n(+ bonusTokenCount)] as quizupload
   [CreateSessionInputSchema\n(type, title, moderationMode)] as createsession
   [JoinSessionInputSchema] as joinsession
-  [SubmitVoteInputSchema\n(answerIds[], freeText, ratingValue)] as submitvote
+  [SubmitVoteInputSchema\n(answerIds, freeText, ratingValue)] as submitvote
   [SendEmojiReactionInputSchema] as emojischema
   [SubmitQaQuestionInputSchema] as qainput
   [UpvoteQaQuestionInputSchema] as qaupvoteinput

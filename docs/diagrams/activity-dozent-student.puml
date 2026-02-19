@@ -3,191 +3,199 @@
 ' arsnova.click V3 – Activity-Diagramm: Dozent / Student / Server
 ' Vollständiger Quiz-Lifecycle inkl. Bonus-Token, Preview, SC-Formate
 ' Stand: 2026-02-19 · 56 Storys · 9 Epics
+'
+' Farblegende (Activity-Boxen einzeln eingefärbt):
+'   🟩 #c8e6c9 = Dozent
+'   🟦 #bbdefb = Student
+'   🟧 #ffe0b2 = Server
 ' ============================================================================
 
-!theme plain
 skinparam shadowing false
-skinparam activity {
-  BackgroundColor #FEFEFE
-  BorderColor #333333
-}
+skinparam ActivityBorderColor #444444
+skinparam ActivityFontColor #222222
+skinparam ArrowColor #555555
+skinparam ActivityDiamondBorderColor #444444
+skinparam SwimlaneBorderColor #888888
+skinparam SwimlaneBorderThickness 2
+skinparam SwimlaneTitleFontSize 16
+skinparam SwimlaneTitleFontStyle bold
 
-title arsnova.click V3 — Aktivitätsdiagramm\nDozent · Student · Server
+title arsnova.click V3 — Aktivitätsdiagramm\nDozent · Student · Server\n🟩 Dozent  🟦 Student  🟧 Server
 
-|#e8f5e9| Dozent |
-|#e3f2fd| Student |
-|#fff3e0| Server |
+|Dozent|
+|Student|
+|Server|
 
 ' ─── Phase 1: Quiz erstellen (Local-First) ──────────────────────────────────
 
 |Dozent|
 start
-:Quiz erstellen\n(Name, Beschreibung);
+#c8e6c9:Quiz erstellen\n(Name, Beschreibung);
 
 if (Preset wählen?) then (ja)
-  :🎮 Spielerisch **oder** 🎓 Seriös\nauswählen (Story 1.11);
-  :Toggles automatisch setzen\n(nach Wunsch anpassbar);
+  #c8e6c9:🎮 Spielerisch **oder** 🎓 Seriös\nauswählen (Story 1.11);
+  #c8e6c9:Toggles automatisch setzen\n(nach Wunsch anpassbar);
 else (nein)
-  :Einzelne Toggles manuell setzen\n(Leaderboard, Sound, Emoji, …);
+  #c8e6c9:Einzelne Toggles manuell setzen\n(Leaderboard, Sound, Emoji, …);
 endif
 
-:bonusTokenCount konfigurieren?\n(Story 4.6: Top X erhalten Token);
+#c8e6c9:bonusTokenCount konfigurieren?\n(Story 4.6: Top X erhalten Token);
 
-:Fragen hinzufügen;
+#c8e6c9:Fragen hinzufügen;
 
 repeat
   if (Fragentyp?) then (SC)
     if (SC-Schnellformat?) then (ja)
-      :Schnellformat wählen\n(Story 1.12: Ja/Nein,\nWahr/Falsch, A/B/C/D);
+      #c8e6c9:Schnellformat wählen\n(Story 1.12: Ja/Nein,\nWahr/Falsch, A/B/C/D);
     else (nein)
-      :Antworten manuell eingeben;
+      #c8e6c9:Antworten manuell eingeben;
     endif
-    :Korrekte Antwort(en) markieren;
+    #c8e6c9:Korrekte Antwort(en) markieren;
   elseif (MC) then
-    :Antworten eingeben\n(mehrere korrekt);
-    :Korrekte markieren;
+    #c8e6c9:Antworten eingeben\n(mehrere korrekt);
+    #c8e6c9:Korrekte markieren;
   elseif (Freitext) then
-    :Nur Fragenstamm eingeben\n(keine Optionen);
+    #c8e6c9:Nur Fragenstamm eingeben\n(keine Optionen);
   elseif (Rating) then
-    :Skala konfigurieren\n(Min/Max, Labels);
+    #c8e6c9:Skala konfigurieren\n(Min/Max, Labels);
   elseif (Survey) then
-    :Optionen ohne isCorrect;
+    #c8e6c9:Optionen ohne isCorrect;
   endif
 
-  :Schwierigkeitsgrad wählen\n(Easy/Medium/Hard);
-  :Markdown & KaTeX im Editor\n(Story 1.7: Live-Preview);
-  :In Yjs/IndexedDB speichern\n(Local-First, kein Server);
+  #c8e6c9:Schwierigkeitsgrad wählen\n(Easy/Medium/Hard);
+  #c8e6c9:Markdown & KaTeX im Editor\n(Story 1.7: Live-Preview);
+  #c8e6c9:In Yjs/IndexedDB speichern\n(Local-First, kein Server);
 
 repeat while (Weitere Frage?) is (ja)
 
 ' ─── Phase 2: Quiz-Preview (Story 1.13) ─────────────────────────────────────
 
-:Quiz-Preview öffnen 👁️\n(Story 1.13);
-:Fragen durchblättern\n(Hotkeys: →/← N/P Home/End 1-9);
+#c8e6c9:Quiz-Preview öffnen 👁️\n(Story 1.13);
+#c8e6c9:Fragen durchblättern\n(Hotkeys: →/← N/P Home/End 1-9);
 if (Validierungsprobleme?) then (ja)
-  :⚠️ Warnung anklicken\n→ zur Frage springen;
-  :Inline-Schnellkorrektur\n(Text klicken / isCorrect togglen\n/ Hotkey E);
-  :Änderung → sofort Yjs-Sync;
+  #c8e6c9:⚠️ Warnung anklicken\n→ zur Frage springen;
+  #c8e6c9:Inline-Schnellkorrektur\n(Text klicken / isCorrect togglen\n/ Hotkey E);
+  #c8e6c9:Änderung → sofort Yjs-Sync;
 else (nein)
-  :✅ Alle Fragen valide\n— bereit zum Live-Schalten;
+  #c8e6c9:✅ Alle Fragen valide\n— bereit zum Live-Schalten;
 endif
 
 ' ─── Phase 3: Quiz live schalten ─────────────────────────────────────────────
 
-:\"Live schalten\" klicken;
+#c8e6c9:„Live schalten" klicken;
 
 |Server|
-:Quiz-Daten empfangen\n(QuizUploadInputSchema validieren);
-:Quiz + Questions + AnswerOptions\nin PostgreSQL speichern;
-:Session erstellen\n(6-stelliger Code generieren\nStatus = LOBBY);
+#ffe0b2:Quiz-Daten empfangen\n(QuizUploadInputSchema validieren);
+#ffe0b2:Quiz + Questions + AnswerOptions\nin PostgreSQL speichern;
+#ffe0b2:Session erstellen\n(6-stelliger Code generieren\nStatus = LOBBY);
 
 if (Session-Typ?) then (QUIZ)
-  :quizId setzen;
+  #ffe0b2:quizId setzen;
 else (Q_AND_A)
-  :title setzen\nquizId = null;
+  #ffe0b2:title setzen\nquizId = null;
 endif
 
-:→ { sessionId, code: "A3F7K2" };
+#ffe0b2:→ { sessionId, code: "A3F7K2" };
 
 |Dozent|
-:Session-Code + QR-Code anzeigen\n(Beamer-Ansicht öffnen);
-:WebSocket-Subscriptions starten\n(onParticipantJoined,\nonStatusChanged);
+#c8e6c9:Session-Code + QR-Code anzeigen\n(Beamer-Ansicht öffnen);
+#c8e6c9:WebSocket-Subscriptions starten\n(onParticipantJoined,\nonStatusChanged);
 
 ' ─── Phase 4: Studenten treten bei ───────────────────────────────────────────
 
 |Student|
-:Session-Code eingeben\n(6-stellig, Story 3.1);
+#bbdefb:Session-Code eingeben\n(6-stellig, Story 3.1);
 
 |Server|
-:Code validieren\n(Session existiert? Status=LOBBY?);
+#ffe0b2:Code validieren\n(Session existiert? Status=LOBBY?);
 
 if (Rate-Limit OK?) then (ja)
-  :✅ Session-Info zurückgeben;
+  #ffe0b2:✅ Session-Info zurückgeben;
 else (nein)
-  :❌ TOO_MANY_REQUESTS\n(5 Versuche / 5 Min);
+  #ffe0b2:❌ TOO_MANY_REQUESTS\n(5 Versuche / 5 Min);
   stop
 endif
 
 |Student|
 if (anonymousMode?) then (ja)
-  :Automatisches Pseudonym\n„Teilnehmer #7";
+  #bbdefb:Automatisches Pseudonym\n„Teilnehmer #7";
 else (nein)
-  :Nickname wählen\n(Thema: Nobelpreisträger, …\noder Freitext, Story 3.2);
+  #bbdefb:Nickname wählen\n(Thema: Nobelpreisträger, …\noder Freitext, Story 3.2);
 endif
 
 |Server|
-:Participant INSERT\n@@unique(sessionId, nickname);
-:→ PUBLISH participantJoined;
+#ffe0b2:Participant INSERT\n@@unique(sessionId, nickname);
+#ffe0b2:→ PUBLISH participantJoined;
 
 |Dozent|
-:Live-Counter +1\nNickname in Lobby;
+#c8e6c9:Live-Counter +1\nNickname in Lobby;
 
 ' ─── Phase 5: Quiz-Schleife ──────────────────────────────────────────────────
 
 |Dozent|
 repeat
-  :\"Nächste Frage\" klicken ▶️;
+  #c8e6c9:„Nächste Frage" klicken ▶️;
 
   |Server|
-  :currentQuestion++\nStatus = ACTIVE;
-  :QuestionStudentDTO erstellen\n⚠️ isCorrect ENTFERNT!;
-  :PUBLISH an alle Clients;
+  #ffe0b2:currentQuestion++\nStatus = ACTIVE;
+  #ffe0b2:QuestionStudentDTO erstellen\n⚠️ isCorrect ENTFERNT!;
+  #ffe0b2:PUBLISH an alle Clients;
 
   |Student|
-  :Frage + Countdown empfangen\n(Markdown/KaTeX gerendert\n△○□◇ Buttons);
+  #bbdefb:Frage + Countdown empfangen\n(Markdown/KaTeX gerendert\n△○□◇ Buttons);
 
   if (Fragentyp?) then (SC)
-    :1 Button antippen → sofort senden\n(Debounce 300ms, Vibration);
+    #bbdefb:1 Button antippen → sofort senden\n(Debounce 300ms, Vibration);
   elseif (MC) then
-    :Buttons togglen → Absenden;
+    #bbdefb:Buttons togglen → Absenden;
   elseif (Freitext) then
-    :Text eingeben → Absenden;
+    #bbdefb:Text eingeben → Absenden;
   elseif (Rating) then
-    :Skala antippen (1 Tap)\n→ ratingValue senden;
+    #bbdefb:Skala antippen (1 Tap)\n→ ratingValue senden;
   elseif (Survey) then
-    :Option wählen → senden;
+    #bbdefb:Option wählen → senden;
   endif
 
   |Server|
-  :Vote INSERT + VoteAnswer INSERT\n@@unique(session, participant, question);
+  #ffe0b2:Vote INSERT + VoteAnswer INSERT\n@@unique(session, participant, question);
 
   if (SC/MC & korrekt?) then (ja)
-    :score = DIFFICULTY × timeBonus\nStreak++ → streakMultiplier;
+    #ffe0b2:score = DIFFICULTY × timeBonus\nStreak++ → streakMultiplier;
   else (nein/Survey/Rating/Freitext)
-    :score = 0\n(SURVEY/FREETEXT/RATING: Streak bleibt);
+    #ffe0b2:score = 0\n(SURVEY/FREETEXT/RATING: Streak bleibt);
   endif
 
-  :→ voteCountUpdate (Broadcast);
+  #ffe0b2:→ voteCountUpdate (Broadcast);
 
   |Dozent|
-  :Live-Abstimmungsbalken\naktualisieren;
-  :\"Ergebnis zeigen\" klicken 📈;
+  #c8e6c9:Live-Abstimmungsbalken\naktualisieren;
+  #c8e6c9:„Ergebnis zeigen" klicken 📈;
 
   |Server|
-  :Status = RESULTS;
-  :QuestionRevealedDTO erstellen\n✅ isCorrect ENTHALTEN!\n+ voteCount, votePercentage;
-  :→ onResultsRevealed (Broadcast);
-  :→ onPersonalResult (individuell pro Participant\n+ bonusToken bei letzter Frage);
+  #ffe0b2:Status = RESULTS;
+  #ffe0b2:QuestionRevealedDTO erstellen\n✅ isCorrect ENTHALTEN!\n+ voteCount, votePercentage;
+  #ffe0b2:→ onResultsRevealed (Broadcast);
+  #ffe0b2:→ onPersonalResult (individuell pro Participant\n+ bonusToken bei letzter Frage);
 
   |Student|
-  :Ergebnis: ✅ Richtig / ❌ Falsch;
-  :Persönliche Scorecard\n(Score, Streak, Rang, Rangänderung);
-  :Motivationsmeldung\n(clientseitig generiert);
+  #bbdefb:Ergebnis: ✅ Richtig / ❌ Falsch;
+  #bbdefb:Persönliche Scorecard\n(Score, Streak, Rang, Rangänderung);
+  #bbdefb:Motivationsmeldung\n(clientseitig generiert);
 
   if (Emoji-Reaktionen aktiv?) then (ja)
-    :Emoji senden\n(👏 🎉 😮 😂 😢);
+    #bbdefb:Emoji senden\n(👏 🎉 😮 😂 😢);
     |Server|
-    :PUBLISH Emoji\n(flüchtig, nicht persistiert);
+    #ffe0b2:PUBLISH Emoji\n(flüchtig, nicht persistiert);
     |Dozent|
-    :Emoji-Blasen auf Beamer;
+    #c8e6c9:Emoji-Blasen auf Beamer;
   endif
 
   |Dozent|
-  :Ergebnis-Diagramm anzeigen\n(Balken / Wordcloud / Histogramm);
+  #c8e6c9:Ergebnis-Diagramm anzeigen\n(Balken / Wordcloud / Histogramm);
   if (showLeaderboard?) then (ja)
-    :Leaderboard-Zwischenstand (Top 5)\n(+ 🔥 bei Streak ≥ 3);
+    #c8e6c9:Leaderboard-Zwischenstand (Top 5)\n(+ 🔥 bei Streak ≥ 3);
     if (teamMode?) then (ja)
-      :Team-Leaderboard anzeigen;
+      #c8e6c9:Team-Leaderboard anzeigen;
     endif
   endif
 
@@ -196,43 +204,43 @@ repeat while (Weitere Fragen?) is (ja)
 ' ─── Phase 6: Quiz beenden ───────────────────────────────────────────────────
 
 |Dozent|
-:\"Quiz beenden\" klicken 🏁;
+#c8e6c9:„Quiz beenden" klicken 🏁;
 
 |Server|
-:Status = FINISHED;
+#ffe0b2:Status = FINISHED;
 
 if (bonusTokenCount > 0?) then (ja)
-  :Top-X ermitteln aus Leaderboard;
-  :BonusToken generieren\n(crypto.randomUUID,\nBNS-XXXX-XXXX Format);
-  :BonusToken INSERT je Platz\n(token, nickname, quizName,\ntotalScore, rank);
-  :→ onPersonalResult mit bonusToken\n(nur an Top-X, individuell);
+  #ffe0b2:Top-X ermitteln aus Leaderboard;
+  #ffe0b2:BonusToken generieren\n(crypto.randomUUID,\nBNS-XXXX-XXXX Format);
+  #ffe0b2:BonusToken INSERT je Platz\n(token, nickname, quizName,\ntotalScore, rank);
+  #ffe0b2:→ onPersonalResult mit bonusToken\n(nur an Top-X, individuell);
 endif
 
-:Redis-Keys löschen ♻️;
-:→ onStatusChanged: FINISHED;
+#ffe0b2:Redis-Keys löschen ♻️;
+#ffe0b2:→ onStatusChanged: FINISHED;
 
 |Student|
-:Finales Ranking anzeigen;
+#bbdefb:Finales Ranking anzeigen;
 if (Bonus-Token erhalten?) then (ja)
-  :🎓 „Dein Bonus-Token: BNS-A3F7-K2M9"\nKopieren → Zwischenablage;
-  :Hinweis: „Sende per E-Mail\nan Dozenten für Bonuspunkte.";
+  #bbdefb:🎓 „Dein Bonus-Token: BNS-A3F7-K2M9"\nKopieren → Zwischenablage;
+  #bbdefb:Hinweis: „Sende per E-Mail\nan Dozenten für Bonuspunkte.";
 else (nein)
-  :Normales finales Leaderboard;
+  #bbdefb:Normales finales Leaderboard;
 endif
 
 |Dozent|
-:Finales Leaderboard + Belohnungseffekte\n(🥇 Konfetti, 🥈 Jubel, 🥉 Applaus);
+#c8e6c9:Finales Leaderboard + Belohnungseffekte\n(🥇 Konfetti, 🥈 Jubel, 🥉 Applaus);
 
 if (bonusTokenCount > 0?) then (ja)
-  :session.getBonusTokens() aufrufen;
-  :Token-Tabelle anzeigen\n(Token, Pseudonym, Punkte, Rang, Datum);
-  :Optional: CSV exportieren;
+  #c8e6c9:session.getBonusTokens() aufrufen;
+  #c8e6c9:Token-Tabelle anzeigen\n(Token, Pseudonym, Punkte, Rang, Datum);
+  #c8e6c9:Optional: CSV exportieren;
 endif
 
-:WebSocket-Verbindung geschlossen;
+#c8e6c9:WebSocket-Verbindung geschlossen;
 
 |Server|
-:Cleanup: 24h nicht beendete Sessions\n90 Tage: BonusToken auto-delete;
+#ffe0b2:Cleanup: 24h nicht beendete Sessions\n90 Tage: BonusToken auto-delete;
 
 ' ─── Parallelpfad: Q&A-Modus ────────────────────────────────────────────────
 
@@ -240,49 +248,53 @@ endif
 detach
 
 |Dozent|
-:Q&A-Session starten\n(type = Q_AND_A\noptional: Titel, moderationMode);
+#c8e6c9:Q&A-Session starten\n(type = Q_AND_A\noptional: Titel, moderationMode);
 
 |Server|
-:Session (LOBBY → ACTIVE)\nkein Quiz, keine Fragen;
+#ffe0b2:Session (LOBBY → ACTIVE)\nkein Quiz, keine Fragen;
 
 |Student|
-:Session beitreten;
-:Frage einreichen\n(max. 500 Zeichen, max. 3/Session);
+#bbdefb:Session beitreten;
+#bbdefb:Frage einreichen\n(max. 500 Zeichen, max. 3/Session);
 
 |Server|
-:QaQuestion INSERT\n(participantId für 3-Fragen-Limit);
+#ffe0b2:QaQuestion INSERT\n(participantId für 3-Fragen-Limit);
 
 if (moderationMode?) then (ja)
-  :Status = PENDING;
+  #ffe0b2:Status = PENDING;
   |Dozent|
-  :Frage freigeben / ablehnen;
+  #c8e6c9:Frage freigeben / ablehnen;
   |Server|
-  :Status ACTIVE / DELETED;
+  #ffe0b2:Status ACTIVE / DELETED;
 else (nein)
-  :Status = ACTIVE (sofort sichtbar);
+  #ffe0b2:Status = ACTIVE (sofort sichtbar);
 endif
 
-:→ qa.onQuestionsUpdated;
+#ffe0b2:→ qa.onQuestionsUpdated;
 
 |Student|
-:Andere Fragen upvoten (Toggle)\n→ QaUpvote INSERT/DELETE;
+#bbdefb:Andere Fragen upvoten (Toggle)\n→ QaUpvote INSERT/DELETE;
 
 |Dozent|
-:Fragen sortiert nach Upvotes\nsehen (Echtzeit);
-:Pin 📌 / Archivieren ✅ / Löschen 🗑️;
+#c8e6c9:Fragen sortiert nach Upvotes\nsehen (Echtzeit);
+#c8e6c9:Pin 📌 / Archivieren ✅ / Löschen 🗑️;
 
 |Server|
-:QaQuestion.status UPDATE\n→ Push Update;
+#ffe0b2:QaQuestion.status UPDATE\n→ Push Update;
 
 |Dozent|
-:Q&A beenden;
+#c8e6c9:Q&A beenden;
 
 |Server|
-:Status = FINISHED\nRedis Cleanup;
+#ffe0b2:Status = FINISHED\nRedis Cleanup;
 
 stop
 
 legend right
+  |= Farbe |= Akteur |
+  | <back:#c8e6c9>    </back> | Dozent |
+  | <back:#bbdefb>    </back> | Student |
+  | <back:#ffe0b2>    </back> | Server |
   |= Symbol |= Bedeutung |
   | ⚠️ | Data-Stripping: isCorrect entfernt |
   | ✅ | Data-Reveal: isCorrect mitgesendet |
