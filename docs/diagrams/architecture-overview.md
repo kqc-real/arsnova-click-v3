@@ -24,7 +24,7 @@ graph TB
         end
         
         subgraph "Shared Library"
-            SHARED[@arsnova/shared-types<br/>Zod Schemas<br/>Type Definitions]
+            SHARED[shared-types Library<br/>Zod Schemas<br/>Type Definitions]
         end
     end
     
@@ -249,7 +249,7 @@ mindmap
         Pub/Sub
         Rate Limiting
     Shared
-      @arsnova/shared-types
+      shared-types Library
         Zod Schemas
         Type Definitions
         DTOs
