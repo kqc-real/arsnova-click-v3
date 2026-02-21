@@ -1,6 +1,7 @@
 # 🏗️ Architektur-Übersicht: arsnova.click V3
 
 **Erstellt:** 2026-02-20  
+**Zuletzt aktualisiert:** 2026-02-21  
 **Zweck:** Visualisierung der gesamten Codebasis-Struktur und Architektur
 
 ## System-Architektur-Diagramm

@@ -17,7 +17,7 @@
 | 0 | 0.3 | Yjs WebSocket-Provider | 🟡 | ⬜ Offen |
 | 0 | 0.4 | Server-Status-Indikator | 🟡 | ⬜ Offen |
 | 0 | 0.5 | Rate-Limiting & Brute-Force-Schutz | 🔴 | ⬜ Offen |
-| 0 | 0.6 | CI/CD-Pipeline (GitHub Actions) | 🔴 | ⬜ Offen |
+| 0 | 0.6 | CI/CD-Pipeline (GitHub Actions) | 🔴 | ✅ Fertig |
 | 1 | 1.1 | Quiz erstellen | 🔴 | ⬜ Offen |
 | 1 | 1.2a | Fragentypen: MC & SC | 🔴 | ⬜ Offen |
 | 1 | 1.2b | Fragentypen: Freitext & Umfrage | 🟡 | ⬜ Offen |

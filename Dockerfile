@@ -27,8 +27,8 @@ COPY prisma/ prisma/
 # Generate Prisma client
 RUN npx prisma generate
 
-# Build backend
-RUN npx tsc --project apps/backend/tsconfig.json
+# Build shared-types + backend (tsc -b handles project references)
+RUN npx tsc -b apps/backend/tsconfig.json
 
 # Build frontend (Angular production build)
 RUN cd apps/frontend && npx ng build --configuration production
@@ -55,8 +55,9 @@ COPY --from=builder /app/node_modules/@prisma node_modules/@prisma
 # Copy compiled backend
 COPY --from=builder /app/apps/backend/dist apps/backend/dist
 
-# Copy compiled shared-types
-COPY --from=builder /app/libs/shared-types libs/shared-types
+# Copy compiled shared-types (needed at runtime via npm workspace resolution)
+COPY --from=builder /app/libs/shared-types/dist libs/shared-types/dist
+COPY --from=builder /app/libs/shared-types/package.json libs/shared-types/package.json
 
 # Copy Angular build output (served by Express as static files)
 COPY --from=builder /app/apps/frontend/dist/browser apps/frontend/dist

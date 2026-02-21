@@ -4,10 +4,13 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "outDir": "./dist",
-    "rootDir": "../../",
+    "rootDir": "./src",
     "types": ["node"],
     "lib": ["ES2022"],
     "esModuleInterop": true
   },
-  "include": ["src/**/*.ts", "../../libs/shared-types/src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../../libs/shared-types" }
+  ]
 }

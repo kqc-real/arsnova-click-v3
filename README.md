@@ -86,5 +86,18 @@ Dieses Projekt wird im "Vibe Coding"-Modus entwickelt. Du agierst als Architekt,
 
 Wir leben **"Documentation as Code"**. Bevor du große Features implementierst, lies das [Architektur-Handbuch](./docs/architecture/handbook.md). Jede architektonische Entscheidung muss als ADR im Ordner `docs/architecture/decisions/` dokumentiert werden.
 
+## 🗺️ Nächste Schritte (Onboarding)
+
+Nachdem die App lokal läuft, empfiehlt sich diese Lesereihenfolge:
+
+1. **[AGENT.md](./AGENT.md)** – die KI-Leitplanken (immer zuerst in den Kontext laden!)
+2. **[Backlog.md](./Backlog.md)** – alle Storys mit Prioritäten und Definition of Done
+3. **[Architektur-Handbuch](./docs/architecture/handbook.md)** – Konzepte, Stack und Regeln
+4. **[Diagramme](./docs/diagrams/diagrams.md)** – Mermaid-Diagramme (Komponenten, Sequenz, ER, …)
+5. **[ADRs](./docs/architecture/decisions/)** – bisherige Architekturentscheidungen (Signals, tRPC, Yjs)
+6. **[Vibe-Coding-Szenario](./docs/vibe-coding/vibe-coding-szenario.md)** – so funktioniert die Zusammenarbeit mit der KI
+
+> **Tipp:** Starte mit einer 🔴 Must-Story, die noch ⬜ Offen ist (z.B. Story 0.1 Redis-Setup). Lies erst den Story-Text im Backlog, dann prompte deine KI mit dem Kontext aus `AGENT.md`.
+
 ---
 *Viel Erfolg beim Bauen der Zukunft des digitalen Lernens!* 🚀

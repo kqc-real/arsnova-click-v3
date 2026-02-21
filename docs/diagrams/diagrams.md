@@ -1,7 +1,7 @@
 # Diagramme: arsnova.click V3
 
 Alle Diagramme sind in Mermaid geschrieben und werden von GitHub nativ gerendert.  
-**Stand:** 2026-02-20
+**Stand:** 2026-02-21
 
 > **VS Code:** Mermaid wird in der Standard-Markdown-Vorschau nicht gerendert. Bitte die Erweiterung **„Markdown Preview Mermaid Support“** (`bierner.markdown-mermaid`) installieren. Siehe [README.md](./README.md) in diesem Ordner.
 

@@ -41,11 +41,8 @@ jobs:
       - name: Prisma validate
         run: npx prisma validate --schema prisma/schema.prisma
 
-      - name: TypeScript compile – shared-types
-        run: npx tsc --project libs/shared-types/tsconfig.json --noEmit
-
-      - name: TypeScript compile – backend
-        run: npx tsc --project apps/backend/tsconfig.json --noEmit
+      - name: TypeScript build – shared-types + backend
+        run: npx tsc -b apps/backend/tsconfig.json
 
       - name: TypeScript compile – frontend
         run: npx tsc --project apps/frontend/tsconfig.json --noEmit

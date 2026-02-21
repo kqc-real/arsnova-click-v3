@@ -1,6 +1,6 @@
 # 🏛️ Architektur-Handbuch: arsnova.click V3
 
-**Zuletzt aktualisiert:** 2026-02-20
+**Zuletzt aktualisiert:** 2026-02-21
 **Rolle:** Living Documentation (Documentation as Code)
 
 ## 1. Einleitung & Philosophie
