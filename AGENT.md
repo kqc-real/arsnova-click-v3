@@ -20,7 +20,7 @@ Du darfst NIEMALS von diesem Stack abweichen, es sei denn, der User befiehlt es 
 
 ## 🛡️ 3. Sicherheits- & Architektur-Regeln (KRITISCH!)
 * **Das DTO-Pattern:** Das Backend lädt Daten mit Prisma. Bevor Daten via tRPC an das Frontend geschickt werden, MÜSSEN sie durch ein DTO (Data Transfer Object) gefiltert werden.
-* **Data-Stripping Rule:** Die richtige Antwort eines Quizzes (z.B. das Feld `isCorrect` in der Datenbank) darf währen einer Live-Session UNTER KEINEN UMSTÄNDEN an das Frontend der Studenten gesendet werden. Entferne diese Felder serverseitig!
+* **Data-Stripping Rule:** Die richtige Antwort eines Quizzes (z.B. das Feld `isCorrect` in der Datenbank) darf während einer Live-Session UNTER KEINEN UMSTÄNDEN an das Frontend der Studenten gesendet werden. Entferne diese Felder serverseitig!
 * **Typsicherheit:** Importiere Typen im Frontend immer direkt aus dem `libs/shared-types` Ordner oder nutze den generierten tRPC-Client. Nutze niemals `any`.
 
 ## 🚶 4. Arbeitsweise (Baby-Steps)

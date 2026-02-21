@@ -1,6 +1,6 @@
 # 🏛️ Architektur-Handbuch: arsnova.click V3
 
-**Zuletzt aktualisiert:** 2026-02-18
+**Zuletzt aktualisiert:** 2026-02-20
 **Rolle:** Living Documentation (Documentation as Code)
 
 ## 1. Einleitung & Philosophie
@@ -26,8 +26,7 @@ Wir setzen auf einen modernen, stark typisierten TypeScript-Stack (Full-Stack), 
 Um die Ziele des Projekts zu erreichen, müssen alle Entwickler folgende drei architektonische Säulen strikt einhalten:
 
 ### 3.1 Local-First & Zero-Knowledge (Die Yjs-Engine)
-Quizzes werden *nicht* in der zentralen PostgreSQL-Datenbank gespeichert. Wenn ein Dozent ein Quiz erstellt, lebt dieses als **CRDT-Dokument (Conflict-free Replicated Data Type)** über `Yjs` primär in der lokalen IndexedDB seines Browsers. 
-Das Backend dient für das Erstellen von Quizzes lediglich als "dummer" WebSocket-Relay-Server, um E2E-verschlüsselte Deltas (Änderungen) zwischen den Endgeräten des Dozenten (z.B. PC und iPad) zu synchronisieren.
+Die **Quiz-Bibliothek** der Dozenten wird *nicht dauerhaft* auf dem Server gespeichert. Wenn ein Dozent ein Quiz erstellt, lebt dieses als **CRDT-Dokument (Conflict-free Replicated Data Type)** über `Yjs` primär in der lokalen IndexedDB seines Browsers. Das Backend dient für die Quiz-Erstellung lediglich als "dummer" WebSocket-Relay-Server, um E2E-verschlüsselte Deltas (Änderungen) zwischen den Endgeräten des Dozenten (z.B. PC und iPad) zu synchronisieren. Beim **Start einer Live-Session** wird eine **Kopie** des gewählten Quiz an den Server übermittelt (Quiz-Upload, Story 2.1a); diese Kopie wird nur für die Dauer der Session in PostgreSQL gehalten – die dauerhafte "Single Source of Truth" der Quiz-Inhalte bleibt die lokale Yjs/IndexedDB des Dozenten.
 
 ### 3.2 End-to-End Typsicherheit (tRPC)
 Wir verzichten auf klassische REST-Schnittstellen und das manuelle Schreiben von DTO-Klassen im Frontend. Durch die Nutzung von **tRPC** im Monorepo (npm Workspaces) importiert das Angular-Frontend die Typen direkt aus der API-Schicht des Backends. Wenn sich das Datenbank-Schema (Prisma) ändert, schlägt der Frontend-Build sofort fehl.
@@ -50,5 +49,6 @@ Wir dokumentieren jede signifikante Änderung an der Architektur, neue Bibliothe
 ---
 
 ## 5. Datenmodell (Single Source of Truth)
-Unser relationales Datenmodell (für Nutzer-Accounts, Admin-Metadaten und flüchtige Live-Sessions) wird zentral über Prisma verwaltet. 
-Das aktuelle Schema findet sich immer in der Datei: `prisma/schema.prisma`.
+Unser relationales Datenmodell (für flüchtige Live-Sessions, Quiz-Session-Kopien, Teilnehmer, Votes, Bonus-Token, Q&A) wird zentral über Prisma verwaltet. Das aktuelle Schema findet sich in: `prisma/schema.prisma`.
+
+**Hinweis zur Anonymität:** Die App ist bewusst **accountfrei** – es gibt kein User-/Account-Modell. Dozenten und Studierende nutzen die App ohne Registrierung. Die Zuordnung Quiz ↔ Dozent erfolgt ausschließlich über Local-First (Yjs/IndexedDB) im Browser; der Server speichert keine Nutzerkonten.

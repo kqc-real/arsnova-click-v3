@@ -6,16 +6,16 @@
 
 ## Kontext
 
-Das Kernprinzip von arsnova.click V3 ist die **"Zero-Knowledge"-Infrastruktur**: Quiz-Inhalte (geistiges Eigentum der Dozenten) sollen niemals im Klartext auf einem zentralen Server gespeichert werden. Dozenten sollen ohne Account arbeiten können und ihre Daten sollen lokal im Browser persistiert werden.
+Das Kernprinzip von arsnova.click V3 ist die **"Zero-Knowledge"-Infrastruktur**: Die **Quiz-Bibliothek** der Dozenten (geistiges Eigentum) wird nicht als dauerhafte Kopie auf einem zentralen Server gespeichert. Dozenten sollen ohne Account arbeiten können; ihre Quiz-Sammlung lebt primär lokal im Browser. Beim **Start einer Live-Session** wird eine **Kopie** des gewählten Quiz an den Server übermittelt (Story 2.1a), damit Abstimmungen und Präsentation laufen können – diese Kopie dient nur der laufenden Session.
 
 ## Entscheidung
 
 Wir verwenden **Yjs** als CRDT-Framework (Conflict-free Replicated Data Types) kombiniert mit **IndexedDB** als lokaler Persistenz-Layer im Browser.
 
-- Quizzes werden als **Yjs-Dokumente** modelliert
-- Die lokale Persistenz erfolgt über `y-indexeddb`
-- Synchronisation zwischen Geräten desselben Dozenten (z.B. Laptop & iPad) läuft über einen WebSocket-Relay-Server, der nur verschlüsselte Deltas weiterleitet
-- Der Server sieht zu keinem Zeitpunkt den Klartext der Quiz-Inhalte
+- Die **Quiz-Bibliothek** wird als **Yjs-Dokumente** modelliert und lebt in der lokalen IndexedDB; der Server speichert **keine dauerhafte** Quiz-Bibliothek.
+- Die lokale Persistenz erfolgt über `y-indexeddb`.
+- Synchronisation zwischen Geräten desselben Dozenten (z.B. Laptop & iPad) läuft über einen WebSocket-Relay-Server, der nur verschlüsselte Deltas weiterleitet.
+- Beim Start einer Live-Session wird eine Kopie des Quiz an den Server gesendet (Quiz-Upload); der Server hält diese Kopie nur für die Dauer der Session (PostgreSQL/Prisma). Zero-Knowledge bezieht sich damit auf die **dauerhafte** Speicherung der Dozenten-Bibliothek, nicht auf die temporäre Session-Kopie.
 
 ## Konsequenzen
 

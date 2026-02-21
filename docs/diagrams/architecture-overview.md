@@ -104,8 +104,10 @@ sequenceDiagram
     FE->>YJS: CRDT-Dokument speichern
     YJS-->>FE: Sync bestätigt
     
-    Note over D,BE: Session starten
-    D->>FE: Session erstellen
+    Note over D,BE: Session starten (Backlog 2.1a)
+    D->>FE: Live schalten
+    FE->>BE: quiz.upload (Quiz-Kopie)
+    BE->>PG: Quiz + Questions speichern
     FE->>BE: session.create()
     BE->>PG: Session speichern
     BE->>R: Code registrieren
@@ -177,6 +179,11 @@ graph TD
             BUTTONS[AnswerButtonsComponent]
             SCORECARD[ScorecardComponent]
         end
+
+        subgraph "Legal - /legal"
+            IMPRINT[ImprintComponent]
+            PRIVACY[PrivacyComponent]
+        end
         
         subgraph "Shared Components"
             HEADER[HeaderComponent]
@@ -210,6 +217,8 @@ graph TD
     VOTING --> SCORECARD
     
     HEADER --> THEME
+    FOOTER --> IMPRINT
+    FOOTER --> PRIVACY
     BEAMER --> COUNTDOWN
     VOTING --> COUNTDOWN
     QEDITOR --> MARKDOWN
@@ -270,30 +279,24 @@ mindmap
 
 ```mermaid
 erDiagram
-    User ||--o{ Quiz : erstellt
-    Quiz ||--o{ Question : enthält
+    Quiz ||--o{ Question : enthaelt
     Quiz ||--o{ Session : verwendet_in
     Question ||--o{ AnswerOption : hat
-    Question ||--o{ Vote : erhält
+    Question ||--o{ Vote : erhaelt
     Session ||--o{ Participant : hat
     Session ||--o{ Vote : sammelt
     Session ||--o{ Team : hat
     Session ||--o{ BonusToken : generiert
-    Session ||--o{ QaQuestion : enthält
+    Session ||--o{ QaQuestion : enthaelt
     Participant ||--o{ Vote : gibt_ab
-    Participant ||--o{ BonusToken : erhält
+    Participant ||--o{ BonusToken : erhaelt
     Participant ||--o{ QaQuestion : stellt
     Participant ||--o{ QaUpvote : votet
     Team ||--o{ Participant : besteht_aus
-    Vote ||--o{ VoteAnswer : wählt
-    AnswerOption ||--o{ VoteAnswer : wird_gewählt
-    QaQuestion ||--o{ QaUpvote : erhält
-    
-    User {
-        string id PK
-        string email UK
-        string password
-    }
+    Vote ||--o{ VoteAnswer : waehlt
+    AnswerOption ||--o{ VoteAnswer : wird_gewaehlt
+    QaQuestion ||--o{ QaUpvote : erhaelt
+
     Quiz {
         string id PK
         string name
@@ -355,4 +358,6 @@ graph LR
 
 ---
 
-**Hinweis:** Dieses Diagramm ist eine Living Documentation und sollte bei größeren Architekturänderungen aktualisiert werden.
+**Weitere Diagramme:** Detaillierte Backend- und Frontend-Komponenten, Datenbank-Schema, Kommunikation Dozent/Student sowie Aktivitätsablauf finden sich in [diagrams.md](./diagrams.md) (Mermaid, von GitHub gerendert).
+
+**Hinweis:** Diese Diagramme sind Living Documentation und sollten bei größeren Architekturänderungen aktualisiert werden.

@@ -8,16 +8,8 @@ datasource db {
   provider = "postgresql"
 }
 
-// Der Dozent / Ersteller (Optional, falls Accounts genutzt werden)
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  quizzes   Quiz[]
-}
-
-// Das Meta-Dokument für den Server
+// Das Meta-Dokument für den Server (Session-Kopie beim Quiz-Upload, Story 2.1a).
+// Kein creatorId/User – die App ist accountfrei (Zero-Account, Local-First).
 model Quiz {
   id                   String     @id @default(uuid())
   name                 String
@@ -37,8 +29,6 @@ model Quiz {
   backgroundMusic      String?                      // Story 5.3: Track-Name (null = aus)
   nicknameTheme        NicknameTheme @default(NOBEL_LAUREATES) // Story 3.2: Nickname-Liste
   bonusTokenCount      Int?                         // Story 4.6: Anzahl Top-Plätze mit Bonus-Token (1–50, null = deaktiviert)
-  creatorId            String?                      // Optional wegen Local-First USP
-  creator              User?      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   questions            Question[]
   sessions             Session[]
   createdAt            DateTime   @default(now())
