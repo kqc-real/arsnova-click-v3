@@ -13,7 +13,7 @@ Das Hauptziel dieses Systems ist es, ein hochperformantes Audience-Response-Syst
 ## 2. Der Technologie-Stack (High-Level)
 Wir setzen auf einen modernen, stark typisierten TypeScript-Stack (Full-Stack), der auf Typsicherheit, Entwicklererfahrung (DX) und Echtzeit-Performance optimiert ist.
 
-* **Frontend:** Angular (v17+) mit **Signals** (Zustandsverwaltung), **Standalone Components** und **Tailwind CSS**.
+* **Frontend:** Angular (v17+, aktuell 19) mit **Signals** (Zustandsverwaltung), **Standalone Components** und **Tailwind CSS**.
 * **Backend:** Node.js API mit **tRPC** (für typsichere Aufrufe und WebSocket-Subscriptions).
 * **Datenbank (Persistenz):** **PostgreSQL** angebunden über **Prisma ORM**.
 * **Echtzeit-Broker (Flüchtig):** **Redis** (Pub/Sub für Abstimmungen).

@@ -350,6 +350,7 @@ sequenceDiagram
     BE->>BE: QuestionRevealedDTO (mit isCorrect)
     BE->>FE: onResultsRevealed
     FE->>D: Ergebnis-Diagramm auf Beamer
+    BE->>PG: Status = PAUSED (zwischen Fragen)
 
     Note over D,R: Phase 6: Quiz beenden + Bonus-Token
     D->>FE: Quiz beenden
@@ -448,6 +449,7 @@ flowchart TB
         S3[Status ACTIVE, QuestionStudentDTO ohne isCorrect]
         S4[Vote speichern, Scoring, voteCountUpdate]
         S5[Status RESULTS, QuestionRevealedDTO mit isCorrect]
+        S5b[Status PAUSED - zwischen Fragen]
         S6[Status FINISHED, ggf. BonusToken generieren]
     end
 
@@ -472,7 +474,8 @@ flowchart TB
     D7 --> D6
     D6 --> S5
     S5 --> ST5
-    ST5 --> D5
+    ST5 --> S5b
+    S5b --> D5
     D8 --> S6
     S6 --> ST6
     ST6 --> D9
@@ -481,4 +484,5 @@ flowchart TB
 **Legende:**  
 - **QuestionStudentDTO:** isCorrect wird serverseitig entfernt (Story 2.4).  
 - **QuestionRevealedDTO:** isCorrect erst nach expliziter Auflösung (RESULTS).  
+- **PAUSED:** Zwischenzustand nach Ergebnis-Anzeige, bevor die nächste Frage gestartet wird.  
 - **Bonus-Token (Story 4.6):** Nur für Top-X, individuell per onPersonalResult.

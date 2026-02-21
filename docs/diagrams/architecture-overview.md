@@ -8,7 +8,7 @@
 ```mermaid
 graph TB
     subgraph "Monorepo (npm Workspaces)"
-        subgraph "Frontend - Angular 17+"
+        subgraph "Frontend - Angular 17+ (aktuell 19)"
             FE[Angular App<br/>Port 4200]
             FE_COMP[Standalone Components<br/>Signals · Tailwind CSS]
             FE_ROUTES[Routing<br/>/quiz /session /vote]
@@ -360,4 +360,4 @@ graph LR
 
 **Weitere Diagramme:** Detaillierte Backend- und Frontend-Komponenten, Datenbank-Schema, Kommunikation Dozent/Student sowie Aktivitätsablauf finden sich in [diagrams.md](./diagrams.md) (Mermaid, von GitHub gerendert).
 
-**Hinweis:** Diese Diagramme sind Living Documentation und sollten bei größeren Architekturänderungen aktualisiert werden.
+**Hinweis:** Diese Diagramme sind eine **vereinfachte Übersicht** (Living Documentation). Die vollständige Komponentenliste und alle DTOs finden sich in [diagrams.md](./diagrams.md). Bei größeren Architekturänderungen sollten beide Dateien aktualisiert werden.

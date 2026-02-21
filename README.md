@@ -13,7 +13,7 @@
 
 **arsnova.click V3** ist die architektonische Neuerfindung einer etablierten Hörsaal-Quiz-App (ähnlich wie Kahoot! oder Mentimeter).
 
-Der absolute USP (Unique Selling Proposition) dieses Systems ist die **"Zero-Knowledge"-Infrastruktur**: Dozenten müssen keine Accounts anlegen. Das geistige Eigentum (die Quizfragen) wird niemals im Klartext auf einem zentralen Server gespeichert, sondern lebt **Local-First** im Browser des Erstellers. Der Server fungiert lediglich als "dummer", extrem schneller Relay-Knotenpunkt für die Live-Abstimmungen der Studierenden im Hörsaal.
+Der absolute USP (Unique Selling Proposition) dieses Systems ist die **"Zero-Knowledge"-Infrastruktur**: Dozenten müssen keine Accounts anlegen. Das geistige Eigentum (die Quizfragen) wird niemals **dauerhaft** auf einem zentralen Server gespeichert, sondern lebt **Local-First** im Browser des Erstellers. Beim Start einer Live-Session wird eine temporäre Kopie an den Server übertragen, die nur für die Dauer der Sitzung existiert. Der Server fungiert lediglich als "dummer", extrem schneller Relay-Knotenpunkt für die Live-Abstimmungen der Studierenden im Hörsaal.
 
 ## 🏗️ Der Technologie-Stack
 
@@ -61,7 +61,7 @@ Klone dieses Repository und wechsle in den Ordner:
 Kopiere die Environment-Datei und starte die Docker-Container (Postgres & Redis):
 
     cp .env.example .env
-    docker-compose up -d
+    docker compose up -d
 
 Pushe das Datenbankschema und generiere den Prisma-Client:
 

@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@arsnova/shared-types": "*",
-    "@prisma/client": "^6.0.0",
+    "@prisma/client": "^7.4.0",
     "@trpc/server": "^10.45.0",
     "cors": "^2.8.5",
     "express": "^4.21.0",

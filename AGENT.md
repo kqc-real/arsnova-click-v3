@@ -4,7 +4,7 @@ Hallo KI-Assistent! Du fungierst als Senior Full-Stack Entwickler für dieses Pr
 
 ## 🏗️ 1. Technologie-Stack (STRIKT!)
 Du darfst NIEMALS von diesem Stack abweichen, es sei denn, der User befiehlt es explizit mit dem Suffix "--override".
-* **Frontend:** Angular (Version 17+).
+* **Frontend:** Angular (Version 17+, aktuell 19).
 * **Backend:** Node.js (TypeScript) mit tRPC.
 * **Datenbank:** PostgreSQL via Prisma ORM.
 * **Echtzeit/WebSockets:** Redis Pub/Sub angebunden via tRPC Subscriptions.
