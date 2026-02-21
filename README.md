@@ -99,5 +99,15 @@ Nachdem die App lokal läuft, empfiehlt sich diese Lesereihenfolge:
 
 > **Tipp:** Starte mit einer 🔴 Must-Story, die noch ⬜ Offen ist (z.B. Story 0.1 Redis-Setup). Lies erst den Story-Text im Backlog, dann prompte deine KI mit dem Kontext aus `AGENT.md`.
 
+## 🔄 Zurücksetzen auf den Ausgangszustand
+
+Falls etwas schiefgeht oder du komplett neu anfangen möchtest: Der Git-Tag **`v0-baseline`** markiert den sauberen Startzustand (Projekt-Skeleton mit Health-Check, CI/CD, Prisma-Schema, Zod-Schemas und Dokumentation).
+
+    # Alle lokalen Änderungen verwerfen und auf die Baseline zurücksetzen
+    git reset --hard v0-baseline
+    npm install
+
+> **Achtung:** `git reset --hard` löscht alle nicht-committeten Änderungen unwiderruflich. Committe oder stashe deine Arbeit vorher, falls du sie behalten willst.
+
 ---
 *Viel Erfolg beim Bauen der Zukunft des digitalen Lernens!* 🚀
