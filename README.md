@@ -29,17 +29,19 @@ Wir setzen auf einen stark typisierten, hochmodernen Full-Stack:
 
 Dieses Projekt ist als Monorepo (npm Workspaces) strukturiert, damit Frontend und Backend sich nahtlos Typen und DTOs teilen können:
 
-    arsnova-click-v3/
-    ├── AGENT.md                 # 🤖 Leitplanken für euren KI-Assistenten
-    ├── docs/
-    │   └── architecture/        # 🏛️ Architecture Decision Records (ADRs) & Handbuch
-    ├── prisma/                  
-    │   └── schema.prisma        # 🗄️ Die Single Source of Truth (Datenbank)
-    ├── apps/
-    │   ├── frontend/            # Das Angular-Projekt
-    │   └── backend/             # Das Node.js-Projekt
-    └── libs/
-        └── shared-types/        # Geteilte Typen (tRPC Router, DTOs)
+```text
+arsnova-click-v3/
+├── AGENT.md                 # 🤖 Leitplanken für euren KI-Assistenten
+├── docs/
+│   └── architecture/        # 🏛️ Architecture Decision Records (ADRs) & Handbuch
+├── prisma/
+│   └── schema.prisma        # 🗄️ Die Single Source of Truth (Datenbank)
+├── apps/
+│   ├── frontend/            # Das Angular-Projekt
+│   └── backend/             # Das Node.js-Projekt
+└── libs/
+    └── shared-types/        # Geteilte Typen (tRPC Router, DTOs)
+```
 
 ## 🚀 Getting Started (Für Entwickler)
 
@@ -54,25 +56,33 @@ Folge diesen Schritten, um das Projekt lokal auf deiner Maschine zum Laufen zu b
 
 Klone dieses Repository und wechsle in den Ordner:
 
-    git clone <dein-repo-url>
-    cd arsnova-click-v3
-    npm install
+```bash
+git clone https://github.com/kqc-real/arsnova-click-v3.git
+cd arsnova-click-v3
+npm install
+```
 
 Kopiere die Environment-Datei und starte die Docker-Container (Postgres & Redis):
 
-    cp .env.example .env
-    docker compose up -d
+```bash
+cp .env.example .env
+docker compose up -d
+```
 
 Pushe das Datenbankschema und generiere den Prisma-Client:
 
-    npx prisma db push
-    npx prisma generate
+```bash
+npx prisma db push
+npx prisma generate
+```
 
 ### 3. Server starten
 
-Starte das Frontend und das Backend parallel:
+Starte Frontend und Backend parallel (oder einzeln: `npm run dev:backend` / `npm run dev:frontend`):
 
-    npm run dev
+```bash
+npm run dev
+```
 
 Die App ist nun unter `http://localhost:4200` (Frontend) erreichbar. Die tRPC-API läuft auf `http://localhost:3000`.
 
@@ -104,9 +114,11 @@ Nachdem die App lokal läuft, empfiehlt sich diese Lesereihenfolge:
 
 Falls etwas schiefgeht oder du komplett neu anfangen möchtest: Der Git-Tag **`v0-baseline`** markiert den sauberen Startzustand (Projekt-Skeleton mit Health-Check, CI/CD, Prisma-Schema, Zod-Schemas und Dokumentation).
 
-    # Alle lokalen Änderungen verwerfen und auf die Baseline zurücksetzen
-    git reset --hard v0-baseline
-    npm install
+```bash
+# Alle lokalen Änderungen verwerfen und auf die Baseline zurücksetzen
+git reset --hard v0-baseline
+npm install
+```
 
 > **Achtung:** `git reset --hard` löscht alle nicht-committeten Änderungen unwiderruflich. Committe oder stashe deine Arbeit vorher, falls du sie behalten willst.
 
