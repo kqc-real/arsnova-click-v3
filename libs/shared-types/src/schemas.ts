@@ -15,6 +15,7 @@ export type QuestionType = z.infer<typeof QuestionTypeEnum>;
 
 export const SessionStatusEnum = z.enum([
   'LOBBY',
+  'QUESTION_OPEN',
   'ACTIVE',
   'PAUSED',
   'RESULTS',
@@ -100,9 +101,8 @@ export const CreateQuizInputSchema = z.object({
   backgroundMusic: z.string().max(50).nullable().optional().default(null),
   nicknameTheme: NicknameThemeEnum.optional().default('NOBEL_LAUREATES'),
   bonusTokenCount: z.number().int().min(1).max(50).nullable().optional().default(null), // Story 4.6
+  readingPhaseEnabled: z.boolean().optional().default(true), // Story 2.6: Zwei-Phasen-Frageanzeige (Lesephase)
 });
-
-export type CreateQuizInput = z.infer<typeof CreateQuizInputSchema>;
 
 /** Schema für eine einzelne Antwortoption beim Hinzufügen/Bearbeiten */
 export const AnswerOptionInputSchema = z.object({
@@ -144,6 +144,7 @@ export const QuizUploadInputSchema = z.object({
   backgroundMusic: z.string().max(50).nullable().optional(),
   nicknameTheme: NicknameThemeEnum,
   bonusTokenCount: z.number().int().min(1).max(50).nullable().optional(), // Story 4.6
+  readingPhaseEnabled: z.boolean().optional(), // Story 2.6: Zwei-Phasen-Frageanzeige
   questions: z.array(AddQuestionInputSchema).min(1, 'Mindestens eine Frage erforderlich'),
 });
 export type QuizUploadInput = z.infer<typeof QuizUploadInputSchema>;
@@ -238,6 +239,24 @@ export const QuestionStudentDTOSchema = z.object({
   ratingLabelMax: z.string().nullable().optional(),   // Nur bei RATING
 });
 export type QuestionStudentDTO = z.infer<typeof QuestionStudentDTOSchema>;
+
+/**
+ * DTO: Frage in der Lesephase – NUR Fragenstamm, KEINE Antwortoptionen (Story 2.6).
+ * Wird im Status QUESTION_OPEN an alle Clients gesendet.
+ * Der Dozent gibt erst danach die Antworten frei (→ ACTIVE + QuestionStudentDTO).
+ */
+export const QuestionPreviewDTOSchema = z.object({
+  id: z.string().uuid(),
+  text: z.string(),
+  type: QuestionTypeEnum,
+  difficulty: DifficultyEnum,
+  order: z.number(),
+  ratingMin: z.number().nullable().optional(),        // Nur bei RATING
+  ratingMax: z.number().nullable().optional(),        // Nur bei RATING
+  ratingLabelMin: z.string().nullable().optional(),   // Nur bei RATING
+  ratingLabelMax: z.string().nullable().optional(),   // Nur bei RATING
+});
+export type QuestionPreviewDTO = z.infer<typeof QuestionPreviewDTOSchema>;
 
 /** DTO: Session-Info für den Beitritt */
 export const SessionInfoDTOSchema = z.object({
@@ -376,6 +395,7 @@ export const QuizExportSchema = z.object({
     backgroundMusic: z.string().max(50).nullable().optional(),
     nicknameTheme: NicknameThemeEnum,
     bonusTokenCount: z.number().int().min(1).max(50).nullable().optional(), // Story 4.6
+    readingPhaseEnabled: z.boolean().optional(), // Story 2.6: Lesephase
     questions: z.array(ExportedQuestionSchema).min(1),
   }),
 });
@@ -483,6 +503,7 @@ export const QUIZ_PRESETS: Record<QuizPreset, Partial<CreateQuizInput>> = {
     enableMotivationMessages: true,
     enableEmojiReactions: true,
     anonymousMode: false,
+    readingPhaseEnabled: false,    // Story 2.6: Schnelles Spieltempo
   },
   SERIOUS: {
     showLeaderboard: false,
@@ -492,5 +513,6 @@ export const QUIZ_PRESETS: Record<QuizPreset, Partial<CreateQuizInput>> = {
     enableEmojiReactions: false,
     anonymousMode: true,
     defaultTimer: null,          // Offene Antwortphase (kein Countdown)
+    readingPhaseEnabled: true,    // Story 2.6: Frage zuerst lesen
   },
 };

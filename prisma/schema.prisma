@@ -28,6 +28,7 @@ model Quiz {
   backgroundMusic      String?                      // Story 5.3: Track-Name (null = aus)
   nicknameTheme        NicknameTheme @default(NOBEL_LAUREATES) // Story 3.2: Nickname-Liste
   bonusTokenCount      Int?                         // Story 4.6: Anzahl Top-Plätze mit Bonus-Token (1–50, null = deaktiviert)
+  readingPhaseEnabled  Boolean    @default(true)   // Story 2.6: Zwei-Phasen-Frageanzeige (Lesephase vor Antworten)
   questions            Question[]
   sessions             Session[]
   createdAt            DateTime   @default(now())
@@ -162,11 +163,12 @@ enum Difficulty {
 }
 
 enum SessionStatus {
-  LOBBY      // Warten auf Teilnehmer
-  ACTIVE     // Frage läuft
-  PAUSED     // Zwischen Fragen
-  RESULTS    // Ergebnisse werden angezeigt
-  FINISHED   // Session beendet
+  LOBBY          // Warten auf Teilnehmer
+  QUESTION_OPEN  // Story 2.6: Nur Fragenstamm sichtbar (Lesephase)
+  ACTIVE         // Antwortoptionen sichtbar, Countdown läuft
+  PAUSED         // Zwischen Fragen
+  RESULTS        // Ergebnisse werden angezeigt
+  FINISHED       // Session beendet
 }
 
 enum NicknameTheme {

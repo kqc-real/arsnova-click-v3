@@ -39,6 +39,7 @@
 | 2 | 2.3 | Präsentations-Steuerung | 🔴 | ⬜ Offen |
 | 2 | 2.4 | Security / Data-Stripping | 🔴 | ⬜ Offen |
 | 2 | 2.5 | Beamer-Ansicht / Presenter-Mode | 🔴 | ⬜ Offen |
+| 2 | 2.6 | Zwei-Phasen-Frageanzeige (Lesephase) | 🟡 | ⬜ Offen |
 | 3 | 3.1 | Beitreten | 🔴 | ⬜ Offen |
 | 3 | 3.2 | Nicknames | 🟡 | ⬜ Offen |
 | 3 | 3.3a | Frage empfangen | 🔴 | ⬜ Offen |
@@ -72,7 +73,7 @@
 
 > **Legende Status:** ⬜ Offen · 🔨 In Arbeit · ✅ Fertig (DoD erfüllt) · ❌ Blockiert
 >
-> **Statistik:** 🔴 Must: 23 · 🟡 Should: 21 · 🟢 Could: 13 = **57 Storys gesamt**
+> **Statistik:** 🔴 Must: 23 · 🟡 Should: 22 · 🟢 Could: 13 = **58 Storys gesamt**
 
 ---
 
@@ -356,10 +357,11 @@ Eine Story gilt als **fertig**, wenn **alle** folgenden Kriterien erfüllt sind:
     - [ ] Teilnehmer-Liste zeigt Nicknames an.
     - [ ] Teilnehmeranzahl wird live aktualisiert.
 
-* **Story 2.3 (Präsentations-Steuerung):** 🔴 Als Dozent möchte ich den Ablauf steuern (Frage öffnen, Countdown starten, Ergebnisse auflösen).
+* **Story 2.3 (Präsentations-Steuerung):** 🔴 Als Dozent möchte ich den Ablauf steuern (Frage öffnen, Antworten freigeben, Ergebnisse auflösen).
   * **Akzeptanzkriterien:**
-    - [ ] Buttons: "Nächste Frage" → "Countdown starten" → "Ergebnis zeigen".
-    - [ ] Session-Status-Wechsel: `LOBBY → ACTIVE → PAUSED → RESULTS → FINISHED`.
+    - [ ] Buttons: "Nächste Frage" → "Antworten freigeben" → "Ergebnis zeigen".
+    - [ ] Session-Status-Wechsel: `LOBBY → QUESTION_OPEN → ACTIVE → RESULTS → PAUSED → …` (Details siehe Story 2.6).
+    - [ ] Wenn `readingPhaseEnabled=false`: Der Status `QUESTION_OPEN` wird übersprungen — "Nächste Frage" wechselt direkt zu `ACTIVE` (bisheriges Verhalten).
     - [ ] Alle verbundenen Clients werden via Subscription über Statuswechsel informiert.
 
 * **Story 2.4 (Security / Data-Stripping):** 🔴 Als Dozent möchte ich absolut sicher sein, dass die `isCorrect`-Lösungsflags *während der Frage-Phase* nicht an die Browser der Studenten gesendet werden.
@@ -375,11 +377,37 @@ Eine Story gilt als **fertig**, wenn **alle** folgenden Kriterien erfüllt sind:
     - [ ] Eigene Angular-Route `/session/:code/present` — erreichbar über einen „Beamer öffnen"-Button in der Dozenten-Steuerung.
     - [ ] Die Ansicht ist auf Vollbild (`lg`+) optimiert: große Schrift (≥ 24px Basis), hoher Kontrast, kein Header/Footer.
     - [ ] **Lobby-Phase:** Zeigt Session-Code, QR-Code (Story 2.1b) und Live-Teilnehmerliste mit Animation bei Neuzugang.
+    - [ ] **Lesephase (`QUESTION_OPEN`, Story 2.6):** Zeigt nur den Fragenstamm (großformatig, zentriert). Antwortoptionen, Countdown und Abstimmungsbalken sind ausgeblendet. Ein dezenter Hinweis „Warte auf Freigabe…" wird angezeigt.
     - [ ] **Frage-Phase (`ACTIVE`):** Zeigt Fragenstamm, Antwortoptionen (ohne `isCorrect`-Markierung), Countdown (Kreisdiagramm, Story 3.5) und Live-Abstimmungsbalken (Anzahl eingegangener Votes).
     - [ ] **Ergebnis-Phase (`RESULTS`):** Zeigt Ergebnis-Visualisierung (Story 4.4) und optional Leaderboard-Zwischenstand (Top 5).
     - [ ] **End-Phase (`FINISHED`):** Zeigt finales Leaderboard (Story 4.1) und Belohnungseffekte (Story 5.4).
     - [ ] Die Ansicht reagiert auf alle Session-Statuswechsel via tRPC-Subscription (kein manuelles Refresh).
     - [ ] Dozent kann per Tastendruck (`F11` oder Button) in den Browser-Vollbildmodus wechseln.
+
+* **Story 2.6 (Zwei-Phasen-Frageanzeige / Lesephase):** 🟡 Als Dozent möchte ich, dass beim Freigeben einer Frage zunächst nur der Fragenstamm angezeigt wird (Lesephase), damit die Studierenden die Frage in Ruhe und vollständig lesen können, bevor die Antwortoptionen erscheinen und der Countdown beginnt.
+  * **Didaktische Begründung:** In klassischen Quiz-Apps erscheinen Frage und Antworten gleichzeitig. Studierende springen dann oft direkt zu den Antworten, ohne die Frage gründlich zu lesen — insbesondere bei komplexen Fragen mit Formeln oder längeren Texten. Die Zwei-Phasen-Anzeige fördert **kognitives Processing** und reduziert impulsives Raten.
+  * **Akzeptanzkriterien:**
+    - [ ] Neuer Session-Status `QUESTION_OPEN` zwischen `LOBBY`/`PAUSED` und `ACTIVE`.
+    - [ ] **Status-Flow (erweitert):** `LOBBY → QUESTION_OPEN → ACTIVE → RESULTS → PAUSED → QUESTION_OPEN → … → FINISHED`.
+    - [ ] **Phase 1 (`QUESTION_OPEN`):**
+      - [ ] Auf Beamer und Studenten-Geräten wird **nur der Fragenstamm** angezeigt (Markdown/KaTeX gerendert), ohne Antwortoptionen.
+      - [ ] Kein Countdown läuft. Abstimmung ist nicht möglich.
+      - [ ] Beamer: Frage großformatig zentriert, dezenter Hinweis „Gleich geht's los…".
+      - [ ] Studenten-Gerät: Frage wird angezeigt, Hinweis „Lies die Frage — Antworten folgen gleich."
+      - [ ] Neues DTO `QuestionPreviewDTO` wird gesendet (enthält `id`, `text`, `type`, `difficulty`, `order` — **keine** `answers`).
+    - [ ] **Phase 2 (Übergang zu `ACTIVE`):**
+      - [ ] Der Dozent klickt den Button „Antworten freigeben" (Story 2.3).
+      - [ ] Backend wechselt Status von `QUESTION_OPEN` → `ACTIVE`.
+      - [ ] tRPC-Subscription `session.onAnswersRevealed` pusht die Antwortoptionen (`QuestionStudentDTO` ohne `isCorrect`).
+      - [ ] Auf Beamer und Studenten-Geräten erscheinen die Antwort-Buttons mit Einblende-Animation (Slide-Up, 200 ms).
+      - [ ] Der Countdown beginnt (Story 3.5).
+    - [ ] **Konfigurierbar:** Neues Quiz-Konfigurationsfeld `readingPhaseEnabled` (default: `true`).
+      - [ ] Wenn `true`: Zwei-Phasen-Flow wie oben beschrieben.
+      - [ ] Wenn `false`: „Nächste Frage" wechselt direkt zu `ACTIVE` (Frage + Antworten + Countdown gleichzeitig — bisheriges Verhalten).
+    - [ ] Das Feature ist in beiden Presets (Story 1.11) konfiguriert: **Spielerisch** → `readingPhaseEnabled=false`, **Seriös** → `readingPhaseEnabled=true`.
+    - [ ] **Security:** Während `QUESTION_OPEN` werden weder `isCorrect` noch die Antwortoptionen an Studenten gesendet — das DTO-Stripping (Story 2.4) greift bereits in dieser Phase.
+    - [ ] **Barrierefreiheit:** Der Übergang von Phase 1 zu Phase 2 wird via `aria-live="polite"` angekündigt, damit Screenreader-Nutzer den Wechsel mitbekommen.
+  * **Abhängigkeiten:** Story 2.3 (Steuerung), Story 2.4 (Security), Story 2.5 (Beamer), Story 3.3a (Frage empfangen), Story 3.5 (Countdown).
 
 ---
 
@@ -419,9 +447,10 @@ Eine Story gilt als **fertig**, wenn **alle** folgenden Kriterien erfüllt sind:
 * **Story 3.3a (Frage empfangen):** 🔴 Als Student möchte ich die aktuell freigegebene Frage auf meinem Gerät in Echtzeit sehen.
   * **Akzeptanzkriterien:**
     - [ ] tRPC-Subscription `session.onQuestionRevealed` pusht die aktuelle Frage.
-    - [ ] Die Frage wird als `QuestionStudentDTO` (ohne `isCorrect`) angezeigt.
+    - [ ] **Lesephase (`QUESTION_OPEN`, Story 2.6):** Nur der Fragenstamm wird angezeigt (`QuestionPreviewDTO`, ohne Antwortoptionen). Antwort-Buttons und Countdown sind ausgeblendet. Hinweistext: „Lies die Frage — Antworten folgen gleich."
+    - [ ] **Antwortphase (`ACTIVE`):** Die Antwortoptionen werden eingeblendet, der Countdown startet. Die vollständige Frage wird als `QuestionStudentDTO` (ohne `isCorrect`) angezeigt.
+    - [ ] Wenn `readingPhaseEnabled=false`: Die Lesephase entfällt — die Frage wird sofort mit Antwortoptionen angezeigt (bisheriges Verhalten).
     - [ ] Fragenstamm und Antwortoptionen werden mit Markdown & KaTeX korrekt gerendert (siehe Story 1.7).
-    - [ ] Countdown wird synchron gestartet.
 
 * **Story 3.3b (Abstimmung abgeben):** 🔴 Als Student möchte ich performant abstimmen können.
   * **Akzeptanzkriterien:**
@@ -454,6 +483,7 @@ Eine Story gilt als **fertig**, wenn **alle** folgenden Kriterien erfüllt sind:
 
 * **Story 3.5 (Countdown-Anzeige):** 🔴 Als Student möchte ich einen gut sichtbaren Countdown-Zähler auf meinem Gerät sehen, damit ich weiß, wie viel Zeit mir noch bleibt.
   * **Akzeptanzkriterien:**
+    - [ ] Der Countdown startet erst mit dem Statuswechsel zu `ACTIVE` (d. h. nach der Lesephase, Story 2.6). Während `QUESTION_OPEN` wird **kein** Countdown angezeigt.
     - [ ] Countdown wird als großer, zentraler Zähler auf dem Client-Gerät (Smartphone) angezeigt.
     - [ ] Auf der Beamer-Ansicht (Dozent) wird der Countdown zusätzlich als Kreisdiagramm / Fortschrittsbalken dargestellt.
     - [ ] Countdown synchronisiert sich über den Server-Timestamp (kein Client-Drift).
