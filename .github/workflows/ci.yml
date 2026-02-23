@@ -12,11 +12,7 @@ on:
   pull_request:
     branches: [main]
 
-# Deploy-Branch: Standard ist main. Für eigenen Deploy-Branch hier z. B. [main, deploy] eintragen
-# und im deploy-Job die Bedingung auf github.ref == 'refs/heads/deploy' ändern.
-env:
-  DEPLOY_BRANCH: main
-
+# Deploy-Branch: Standard ist main. Optional Repository-Variable DEPLOY_BRANCH setzen (z. B. deploy).
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -154,13 +150,14 @@ jobs:
     name: Deploy to Server
     runs-on: ubuntu-latest
     needs: [lint, test, docker]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/${{ env.DEPLOY_BRANCH }}' && vars.DEPLOY_ENABLED == 'true'
+    if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', vars.DEPLOY_BRANCH || 'main') && vars.DEPLOY_ENABLED == 'true'
     concurrency:
-      group: deploy-${{ env.DEPLOY_BRANCH }}
+      group: deploy-${{ vars.DEPLOY_BRANCH || 'main' }}
       cancel-in-progress: false
 
     env:
       DEPLOY_DIR: ${{ vars.DEPLOY_DIR || '/home/deploy/arsnova-click-v3' }}
+      DEPLOY_BRANCH: ${{ vars.DEPLOY_BRANCH || 'main' }}
 
     steps:
       - name: Deploy via SSH
@@ -174,9 +171,10 @@ jobs:
           script: |
             set -e
             export DEPLOY_DIR="${DEPLOY_DIR:-/home/deploy/arsnova-click-v3}"
+            export DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
             cd "$DEPLOY_DIR"
             git fetch origin
-            git checkout ${{ env.DEPLOY_BRANCH }}
-            git reset --hard origin/${{ env.DEPLOY_BRANCH }}
+            git checkout "$DEPLOY_BRANCH"
+            git reset --hard "origin/$DEPLOY_BRANCH"
             chmod +x scripts/deploy.sh
             ./scripts/deploy.sh
