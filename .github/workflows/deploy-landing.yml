@@ -40,13 +40,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Expected Pages URL
+        run: |
+          echo "Repository: ${{ github.repository }}"
+          echo "Nach Deploy erreichbar unter: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+
       - name: Build landing
         env:
           PUBLIC_GITHUB_REPO: ${{ github.repository }}
+          BASE_PATH: /${{ github.event.repository.name }}/
         run: npm run build -w @arsnova/landing
 
+      - name: List artifact root (Debug)
+        run: ls -la apps/landing/dist/
+
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: apps/landing/dist
 
@@ -60,4 +69,4 @@ jobs:
     steps:
       - name: Deploy
         id: deploy
-        uses: actions/deploy-pages@4
+        uses: actions/deploy-pages@v4

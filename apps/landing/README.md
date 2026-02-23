@@ -27,6 +27,13 @@ Output: `apps/landing/dist/`
 
 **Hinweis:** Du brauchst Schreibrechte auf das Repo und die Berechtigung, Pages auf „GitHub Actions“ umzustellen. Der Workflow selbst liegt im Repo; nach dem Push und nach Aktivierung von Pages läuft alles automatisch.
 
+### 404 auf \`username.github.io/arsnova-click-v3/\`?
+
+- **Pages-Quelle:** Settings → Pages → Source muss **„GitHub Actions“** sein (nicht „Deploy from a branch“).
+- **Workflow ausführen:** Actions → „Deploy Landing (GitHub Pages)“ → „Run workflow“ (Branch: main). Prüfen, ob beide Jobs (Build, Deploy) grün sind.
+- **URL exakt:** Repo-Name muss genau `arsnova-click-v3` heißen (kleingeschrieben); die URL ist `https://<owner>.github.io/arsnova-click-v3/`.
+- **Default-Branch:** Der Workflow läuft nur bei Push auf `main`; bei Fork prüfen, ob der Default-Branch `main` ist.
+
 ## SEO
 
 - Meta Title/Description, Open Graph, Twitter Cards

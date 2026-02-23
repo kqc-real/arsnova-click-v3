@@ -1,16 +1,20 @@
 ---
-import { GITHUB_URL } from '@/config/github';
-const appUrl = Astro.url.searchParams.get('app') ?? 'https://app.arsnova.click';
+import { GITHUB_URL, APP_URL_V2, APP_URL_V3 } from '@/config/github';
 ---
 
 <section class="bg-slate-900 px-4 py-16 sm:px-6 sm:py-24" aria-labelledby="cta-heading">
   <div class="mx-auto max-w-3xl text-center">
     <h2 id="cta-heading" class="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">Bereit für die erste Session?</h2>
     <p class="mt-4 text-lg text-slate-300">Kein Account, keine Installation. Ein Klick – Sie leiten Ihre Teilnehmer:innen per Code oder QR-Code.</p>
-    <a href={appUrl} class="mt-8 inline-flex items-center rounded-xl bg-brand-500 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 focus:ring-offset-slate-900">
-      Jetzt starten
-      <span class="ml-2" aria-hidden="true">→</span>
-    </a>
+    <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
+      <a href={APP_URL_V2} class="inline-flex items-center rounded-xl bg-brand-500 px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 focus:ring-offset-slate-900">
+        V2 starten
+        <span class="ml-2" aria-hidden="true">→</span>
+      </a>
+      <a href={APP_URL_V3} class="inline-flex items-center rounded-xl border border-slate-500 bg-slate-800/80 px-6 py-3.5 text-base font-semibold text-white transition hover:border-brand-500/50 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-900">
+        V3 (Work in Progress)
+      </a>
+    </div>
     <p class="mt-6">
       <a href={GITHUB_URL} class="text-sm text-slate-400 hover:text-white" target="_blank" rel="noopener noreferrer">Open Source auf GitHub</a>
     </p>

@@ -8,3 +8,8 @@ const repo = import.meta.env.PUBLIC_GITHUB_REPO || 'kqc-real/arsnova-click-v3';
 export const GITHUB_REPO = repo;
 export const GITHUB_URL = `https://github.com/${repo}`;
 export const GITHUB_DOCS_URL = `${GITHUB_URL}/blob/main/docs/ARS-comparison/Kahoot-Mentimeter-Slido-arsnova.click-v3.md`;
+
+/** CTA: stabile Version (v2) */
+export const APP_URL_V2 = import.meta.env.PUBLIC_APP_URL_V2 || 'https://arsnova.click';
+/** CTA: V3 (Work in Progress) – z. B. Demo oder gleiche URL bis Server steht */
+export const APP_URL_V3 = import.meta.env.PUBLIC_APP_URL_V3 || 'https://arsnova.click';

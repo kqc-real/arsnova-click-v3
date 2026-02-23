@@ -9,6 +9,8 @@ export interface Props {
 }
 
 const { title, description, canonical, noindex = false } = Astro.props;
+/** Base path für Links (z. B. /arsnova-click-v3/ bei GitHub Pages) */
+const base = (typeof import.meta.env.BASE_URL === 'string' && import.meta.env.BASE_URL) || '/';
 const site = 'https://arsnova.click';
 const fullTitle = title === 'Start' ? 'arsnova.click – Live-Quiz & Abstimmung. 100% DSGVO. Kostenlos.' : `${title} · arsnova.click`;
 const url = canonical ? new URL(canonical, site).href : site;
@@ -62,12 +64,12 @@ const ogImage = new URL('/og.png', site).href;
   <body class="min-h-screen bg-slate-900 text-slate-100 font-sans antialiased">
     <header class="sticky top-0 z-50 border-b border-slate-700/80 bg-slate-900/95 backdrop-blur-sm">
       <nav class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6" aria-label="Hauptnavigation">
-        <a href="/" class="font-display text-xl font-bold tracking-tight text-white">arsnova<span class="text-brand-400">.click</span></a>
+        <a href={base} class="font-display text-xl font-bold tracking-tight text-white">arsnova<span class="text-brand-400">.click</span></a>
         <div class="flex items-center gap-6">
-          <a href="/#features" class="text-sm font-medium text-slate-400 hover:text-white">Features</a>
-          <a href="/#vergleich" class="text-sm font-medium text-slate-400 hover:text-white">Vergleich</a>
+          <a href={`${base}#features`} class="text-sm font-medium text-slate-400 hover:text-white">Features</a>
+          <a href={`${base}#vergleich`} class="text-sm font-medium text-slate-400 hover:text-white">Vergleich</a>
           <a href={GITHUB_URL} class="text-sm font-medium text-slate-400 hover:text-white" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a href="/#start" class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-500">Jetzt starten</a>
+          <a href={`${base}#start`} class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-500">Jetzt starten</a>
         </div>
       </nav>
     </header>
@@ -81,8 +83,8 @@ const ogImage = new URL('/og.png', site).href;
         <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
           <p class="text-sm text-slate-500">© {new Date().getFullYear()} arsnova.click · Open Source · MIT</p>
           <div class="flex gap-6">
-            <a href="/impressum" class="text-sm text-slate-500 hover:text-slate-300">Impressum</a>
-            <a href="/datenschutz" class="text-sm text-slate-500 hover:text-slate-300">Datenschutz</a>
+            <a href={`${base}impressum/`} class="text-sm text-slate-500 hover:text-slate-300">Impressum</a>
+            <a href={`${base}datenschutz/`} class="text-sm text-slate-500 hover:text-slate-300">Datenschutz</a>
             <a href={GITHUB_URL} class="text-sm text-slate-500 hover:text-slate-300" target="_blank" rel="noopener noreferrer">GitHub</a>
           </div>
         </div>
