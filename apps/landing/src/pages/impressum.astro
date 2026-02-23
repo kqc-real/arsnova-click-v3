@@ -17,6 +17,7 @@ import { legal, site } from '../config/legal';
         <h2 class="font-display text-lg font-semibold text-white">Anbieter / Diensteanbieter</h2>
         <p class="mt-2">
           {legal.providerName}<br />
+          {legal.institution && <>{legal.institution}<br /></>}
           {legal.street}<br />
           {legal.city}<br />
           {legal.country}
@@ -27,6 +28,9 @@ import { legal, site } from '../config/legal';
         <h2 class="font-display text-lg font-semibold text-white">Kontakt</h2>
         <p class="mt-2">
           E-Mail: <a href={`mailto:${legal.email}`} class="text-brand-400 hover:underline">{legal.email}</a>
+          {legal.website && (
+            <><br />Web: <a href={legal.website} class="text-brand-400 hover:underline" target="_blank" rel="noopener noreferrer">{legal.website}</a></>
+          )}
           {legal.phone && (
             <><br />Telefon: {legal.phone}</>
           )}
