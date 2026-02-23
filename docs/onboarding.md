@@ -66,7 +66,9 @@ arsnova-click-v3/
 │   │       ├── trpc.ts       # tRPC-Initialisierung (Router, Procedures)
 │   │       └── routers/      # tRPC-Router (API-Endpunkte)
 │   │           ├── index.ts  # appRouter – vereint alle Sub-Router
-│   │           └── health.ts # Health-Check-Endpoint
+│   │           ├── health.ts # health.check, health.stats, health.ping
+│   │           ├── session.ts# session.create, getInfo, join, getExportData
+│   │           └── vote.ts   # vote.submit (mit Rate-Limit)
 │   └── frontend/             # Angular 19 Single-Page-App
 │       └── src/app/
 │           ├── app.component.ts   # Root-Komponente
@@ -113,38 +115,39 @@ Das System ist nach dem **Local-First**-Prinzip entworfen:
 
 ## 4. Aktueller Stand vs. Ziel-Architektur
 
-> ⚠️ **Wichtig:** Das Projekt befindet sich im frühen Aufbau. Viele der hier beschriebenen Komponenten existieren erst als Planung (siehe `Backlog.md`). Dieser Abschnitt kennzeichnet klar, was **bereits implementiert** ist und was noch **umgesetzt werden muss**.
+> **Epic 0 (Infrastruktur) ist abgeschlossen.** Dieser Abschnitt kennzeichnet, was **bereits implementiert** ist und was als nächstes ansteht (siehe `Backlog.md`).
 
-### Was bereits funktioniert (✅ Implementiert)
+### Was bereits funktioniert (✅ Implementiert – Stand: Tag `v0-epic0`)
 
 | Komponente | Beschreibung |
 |---|---|
-| Express + tRPC-Server | Backend läuft auf Port 3000 mit einem `health.check`-Endpoint |
-| Angular 19 Frontend | Standalone Root-Component mit Tailwind CSS, zeigt Backend-Verbindungsstatus |
-| tRPC-Client (`httpBatchLink`) | Frontend ruft typsicher Backend-Endpoints auf |
+| Express + tRPC-Server | Backend auf Port 3000 mit `health.check`, `health.stats`, `health.ping` (Subscription) |
+| Angular 19 Frontend | Standalone Components, Signals, Tailwind CSS, Startseite mit Server-Status-Widget |
+| tRPC-Client | `httpBatchLink` (Queries/Mutations) + `wsLink` (Subscriptions) |
+| Redis-Anbindung | `ioredis`-Client, Health-Check, Rate-Limiting (Sliding-Window), Session-Code-Lockout |
+| tRPC WebSocket | Separater WebSocket-Server (Port 3001) für Subscriptions |
+| Yjs y-websocket Relay | Backend startet y-websocket-Server (Port 3002) für Multi-Device-Sync |
+| Server-Status (Epic 0.4) | `health.stats`, Widget auf Startseite (Polling 30s), Schwellwerte healthy/busy/overloaded |
+| Session- & Vote-Router | `session` (create, getInfo, join, getExportData) und `vote` (submit) mit Rate-Limiting |
 | Prisma-Schema | Vollständiges Datenbankmodell (Quiz, Question, Session, Vote, etc.) |
-| Zod-Schemas (`shared-types`) | Alle Input-/Output-Schemas und DTOs sind definiert |
-| Docker Compose | PostgreSQL 16 + Redis 7 starten per `docker compose up` |
-| CI/CD-Pipeline | GitHub Actions prüft TypeScript, ESLint, Prisma und Docker-Build |
+| Zod-Schemas (`shared-types`) | Alle Input-/Output-Schemas und DTOs definiert |
+| Docker Compose | PostgreSQL 16 + Redis 7 (+ optional App-Container) per `docker compose up` |
+| CI/CD-Pipeline | GitHub Actions: Prisma validate/generate, TypeScript, ESLint, Tests, Docker-Build (Node 20/22) |
 
-### Was noch umgesetzt werden muss (🔲 Geplant)
+### Was als nächstes ansteht (🔲 Geplant)
 
-| Komponente | Beschreibung | Backlog-Story |
+| Komponente | Beschreibung | Backlog |
 |---|---|---|
-| Redis-Anbindung im Backend | `ioredis`-Client für Pub/Sub und Rate-Limiting | Story 0.1 |
-| tRPC WebSocket-Adapter | `wsLink` für Echtzeit-Subscriptions (Events an Clients pushen) | Story 0.2 |
-| Yjs / IndexedDB | Local-First-Speicherung der Quizzes im Browser | Story 1.5 |
-| y-websocket Relay | Multi-Device-Sync für Dozenten (PC ↔ iPad) | Story 0.3 |
-| Quiz-Verwaltung | Erstellen, Bearbeiten, Löschen von Quizzes | Stories 1.1–1.10 |
-| Live-Session-Flow | Session starten, Lobby, Fragen freigeben, Abstimmung, Ergebnis | Epics 2–4 |
-| Service Layer | ScoringService, StreakService, BonusTokenService, etc. | Epics 4–5 |
-| DTO-Stripping (Runtime) | `isCorrect` serverseitig entfernen bei Status `ACTIVE` | Story 2.4 |
+| Quiz-Verwaltung | Erstellen, Bearbeiten, Löschen von Quizzes (Local-First mit Yjs/IndexedDB) | Epic 1 (1.1–1.10) |
+| Live-Session-Flow | Lobby, Fragen freigeben, Abstimmung, Ergebnis, Leaderboard | Epics 2–4 |
+| Service Layer | ScoringService, StreakService, BonusTokenService, CleanupService | Epics 4–5 |
+| DTO-Stripping (Runtime) | `isCorrect` serverseitig bei Status `ACTIVE` entfernen (QuestionStudentDTO) | Story 2.4 |
 
 ---
 
-## 5. Komponentenbeschreibung (Ziel-Architektur)
+## 5. Komponentenbeschreibung (Stand: Epic 0 abgeschlossen)
 
-Das folgende Diagramm zeigt die **geplante Backend-Architektur**. Aktuell existiert nur der `healthRouter` – alle anderen Komponenten werden schrittweise umgesetzt.
+Das folgende Diagramm zeigt die **Backend-Architektur**. Bereits umgesetzt: health-, session- und vote-Router, Redis-Anbindung, Rate-Limiting, WebSocket und Yjs-Relay.
 
 ```mermaid
 graph TB
@@ -157,66 +160,71 @@ graph TB
     subgraph Router["appRouter - tRPC"]
         health["healthRouter ✅"]
         quiz["quizRouter 🔲"]
-        session["sessionRouter 🔲"]
-        vote["voteRouter 🔲"]
+        session["sessionRouter ✅"]
+        vote["voteRouter ✅"]
     end
 
-    subgraph Services["Services 🔲"]
-        scoring[ScoringService]
-        streak[StreakService]
-        codegen[SessionCodeService]
-        cleanup[CleanupService]
-        ratelimit[RateLimitService]
+    subgraph Services["Services"]
+        ratelimit[RateLimitService ✅]
+        scoring[ScoringService 🔲]
+        streak[StreakService 🔲]
+        codegen[SessionCodeService ✅]
+        cleanup[CleanupService 🔲]
     end
 
-    subgraph DTO["DTO Layer 🔲"]
-        studdto["QuestionStudentDTO (kein isCorrect)"]
-        revdto["QuestionRevealedDTO (mit isCorrect)"]
+    subgraph DTO["DTO Layer"]
+        studdto["QuestionStudentDTO 🔲"]
+        revdto["QuestionRevealedDTO 🔲"]
     end
 
-    pg[(PostgreSQL)]
-    redis[("Redis 🔲")]
+    pg[(PostgreSQL ✅)]
+    redis[("Redis ✅")]
+    wss[WebSocket 3001 ✅]
+    yws[y-websocket 3002 ✅]
 
     express --> cors --> trpcmw
     trpcmw --> health
     trpcmw --> quiz
     trpcmw --> session
     trpcmw --> vote
-    session --> scoring
     session --> codegen
-    vote --> scoring
-    vote --> streak
     vote --> ratelimit
+    session --> ratelimit
     session --> studdto
     session --> revdto
-    scoring --> pg
+    codegen --> pg
     ratelimit --> redis
     session --> redis
+    express --> wss
+    express --> yws
 ```
 
-> ✅ = implementiert · 🔲 = geplant
+> ✅ = implementiert (Epic 0) · 🔲 = geplant (Epic 1+)
 
 ### A. Frontend (Angular 19)
 
 Das Frontend nutzt modernste Angular-Features:
 
-* **Standalone Components:** Wir verzichten komplett auf `NgModules` – jede Komponente ist eigenständig importierbar.
-* **Angular Signals:** Steuern reaktiv den UI-Zustand. Wenn sich Daten ändern, aktualisiert Angular nur den betroffenen DOM-Teil (kein manuelles `subscribe`/`unsubscribe`).
-* **tRPC-Client:** Stellt eine typsichere Verbindung zum Backend her. Aktuell ist nur `httpBatchLink` aktiv (für Queries/Mutations). Geplant: `wsLink` für Echtzeit-Subscriptions (Story 0.2).
-* **Yjs & IndexedDB (geplant):** Quiz-Daten werden im Browser gespeichert. Yjs sorgt als CRDT-Bibliothek dafür, dass Änderungen zwischen Geräten konfliktfrei synchronisiert werden (Story 1.5).
+* **Standalone Components:** Keine `NgModules` – jede Komponente ist eigenständig importierbar.
+* **Angular Signals:** Reaktiver UI-Zustand; keine manuellen Subscriptions für State.
+* **tRPC-Client:** `httpBatchLink` (Queries/Mutations) und `wsLink` (Subscriptions) – beide aktiv.
+* **Server-Status-Widget:** Zeigt auf der Startseite aggregierte Kennzahlen (health.stats, Polling 30s).
+* **Yjs & IndexedDB (geplant – Epic 1):** Quiz-Daten Local-First im Browser; Yjs für Multi-Device-Sync.
 
 ### B. Backend (Node.js + tRPC)
 
-* **tRPC Router:** Definiert die API-Endpunkte. Frontend und Backend teilen sich die Typdefinitionen direkt über `@arsnova/shared-types` – kein manuelles Pflegen von REST-Contracts nötig.
-* **Service Layer (geplant):** Geschäftslogik wie Punkteberechnung (ScoringService), Streak-Tracking (StreakService) und Bonus-Token-Generierung (BonusTokenService).
-* **DTO Layer (geplant):** Kritische Sicherheitskomponente – filtert sensible Daten (z. B. `isCorrect`) heraus, bevor sie an Studenten-Clients gesendet werden.
-* **Prisma ORM:** Typsicherer Abstraktionslayer für PostgreSQL. Das Schema ist bereits vollständig definiert in `prisma/schema.prisma`.
+* **tRPC Router:** health (check, stats, ping), session (create, getInfo, join, getExportData), vote (submit). Typen über `@arsnova/shared-types`.
+* **Rate-Limiting (Epic 0.5):** Redis Sliding-Window für Session-Code, Vote-Submit und Session-Erstellung; tRPC-Error `TOO_MANY_REQUESTS` mit Retry-After.
+* **Service Layer (teilweise):** SessionCode-Logik im sessionRouter; ScoringService, StreakService, CleanupService folgen in Epics 4–5.
+* **DTO Layer (geplant – Story 2.4):** Data-Stripping für `isCorrect` bei Status ACTIVE.
+* **Prisma ORM:** Schema in `prisma/schema.prisma`; Migrations/Client per `prisma generate` und `prisma db push`.
 
 ### C. Infrastruktur
 
-* **PostgreSQL:** Speichert flüchtige Daten einer Live-Session (Teilnehmer, Session-Status, Votes). Läuft via Docker.
-* **Redis (geplant – Story 0.1):** Message-Broker für Pub/Sub-Echtzeitereignisse und Datenspeicher für Rate-Limiting. Der Container läuft bereits, die Backend-Anbindung fehlt noch.
-* **y-websocket Relay (geplant – Story 0.3):** Spiegelt Yjs-Synchronisationsdaten zwischen den Geräten des Dozenten.
+* **PostgreSQL:** Live-Session-Daten (Sessions, Participants, Votes). Docker Compose.
+* **Redis (✅):** Health-Check, Rate-Limiting (ioredis), vorbereitet für Pub/Sub in Epics 2–4.
+* **WebSocket (Port 3001):** tRPC-Subscriptions (z. B. health.ping).
+* **y-websocket (Port 3002):** Yjs-Relay für Dozenten-Multi-Device-Sync.
 
 ---
 
@@ -263,6 +271,20 @@ Das Frontend nutzt modernste Angular-Features:
 | [`docs/diagrams/diagrams.md`](diagrams/diagrams.md) | Mermaid-Diagramme (Backend, Frontend, DB, Sequenz) |
 | [`prisma/schema.prisma`](../prisma/schema.prisma) | Datenbankmodell – Single Source of Truth |
 | [`libs/shared-types/src/schemas.ts`](../libs/shared-types/src/schemas.ts) | Alle Zod-Schemas und DTOs |
+
+### Zurücksetzen auf einen bekannten Stand
+
+Falls die Umgebung kaputt geht oder du einen sauberen Ausgangspunkt brauchst:
+
+| Git-Tag | Beschreibung |
+|---------|--------------|
+| **`v0-epic0`** | Stand nach Epic 0 (Redis, WebSocket, Yjs, Server-Status, Rate-Limiting, CI/CD) – **empfohlen** |
+| **`v0-baseline`** | Nur Projekt-Skeleton (vor Epic 0) |
+
+```bash
+git reset --hard v0-epic0
+npm install
+```
 
 ---
 
