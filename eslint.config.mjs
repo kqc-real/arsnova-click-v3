@@ -34,6 +34,7 @@ export default tseslint.config(
       '**/node_modules/**',
       '**/dist/**',
       '**/.angular/**',
+      '**/.astro/**',
       '**/coverage/**',
     ],
   },
