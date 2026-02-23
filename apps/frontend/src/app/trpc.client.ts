@@ -6,14 +6,9 @@ import {
   wsLink,
 } from '@trpc/client';
 import type { AppRouter } from '@arsnova/api';
+import { getTrpcWsUrl } from './config/ws-urls';
 
-/** WebSocket-URL für Subscriptions (Story 0.2). Dev: direkt Backend-Port. */
-const WS_URL =
-  typeof window !== 'undefined'
-    ? `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}:3001`
-    : 'ws://localhost:3001';
-
-const wsClient = createWSClient({ url: WS_URL });
+const wsClient = createWSClient({ url: getTrpcWsUrl() });
 
 /**
  * tRPC-Client für das Angular-Frontend.
