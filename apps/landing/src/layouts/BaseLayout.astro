@@ -61,18 +61,74 @@ const ogImage = new URL('/og.png', site).href;
       featureList: ['Live-Quiz', 'Abstimmungen', 'DSGVO-konform', 'Local-First', 'Self-Hosted', 'KaTeX', 'Lesephase', 'WCAG 2.1 AA'],
     })} />
   </head>
-  <body class="min-h-screen bg-slate-900 text-slate-100 font-sans antialiased">
-    <header class="sticky top-0 z-50 border-b border-slate-700/80 bg-slate-900/95 backdrop-blur-sm">
-      <nav class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6" aria-label="Hauptnavigation">
-        <a href={base} class="font-display text-xl font-bold tracking-tight text-white">arsnova<span class="text-brand-400">.click</span></a>
-        <div class="flex items-center gap-6">
-          <a href={`${base}#features`} class="text-sm font-medium text-slate-400 hover:text-white">Features</a>
-          <a href={`${base}#vergleich`} class="text-sm font-medium text-slate-400 hover:text-white">Vergleich</a>
-          <a href={GITHUB_URL} class="text-sm font-medium text-slate-400 hover:text-white" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a href={`${base}#start`} class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-500">Jetzt starten</a>
+  <body class="min-h-screen overflow-x-hidden bg-slate-900 text-slate-100 font-sans antialiased">
+    <header class="sticky top-0 z-50 border-b border-slate-700/80 bg-slate-900/95 backdrop-blur-sm" id="main-header">
+      <nav class="mx-auto max-w-6xl px-4 py-3 sm:px-6" aria-label="Hauptnavigation">
+        <div class="flex items-center justify-between gap-4">
+          <a href={base} class="font-display text-xl font-bold tracking-tight text-white">arsnova<span class="text-brand-400">.click</span></a>
+          <!-- Desktop: Links in einer Zeile -->
+          <div class="hidden items-center gap-6 md:flex">
+            <a href={`${base}#features`} class="text-sm font-medium text-slate-400 hover:text-white">Features</a>
+            <a href={`${base}#vergleich`} class="text-sm font-medium text-slate-400 hover:text-white">Vergleich</a>
+            <a href={GITHUB_URL} class="text-sm font-medium text-slate-400 hover:text-white" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href={`${base}#start`} class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-500">Jetzt starten</a>
+          </div>
+          <!-- Mobile: Hamburger-Button -->
+          <button
+            type="button"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white md:hidden"
+            aria-expanded="false"
+            aria-controls="nav-menu"
+            aria-label="Menü öffnen"
+            id="nav-toggle"
+          >
+            <span class="sr-only">Menü</span>
+            <svg class="h-6 w-6 menu-icon-open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+            <svg class="h-6 w-6 hidden menu-icon-close" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <!-- Mobile: ausklappbares Menü -->
+        <div id="nav-menu" class="hidden flex flex-col gap-1 border-t border-slate-700 pt-4 md:hidden" role="menu">
+          <a href={`${base}#features`} class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white" role="menuitem">Features</a>
+          <a href={`${base}#vergleich`} class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white" role="menuitem">Vergleich</a>
+          <a href={GITHUB_URL} class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white" target="_blank" rel="noopener noreferrer" role="menuitem">GitHub</a>
+          <a href={`${base}#start`} class="mt-2 rounded-lg bg-brand-600 px-3 py-2.5 text-sm font-semibold text-white hover:bg-brand-500" role="menuitem">Jetzt starten</a>
         </div>
       </nav>
     </header>
+    <script is:inline>
+      (function () {
+        var toggle = document.getElementById('nav-toggle');
+        var menu = document.getElementById('nav-menu');
+        var openIcon = document.querySelector('.menu-icon-open');
+        var closeIcon = document.querySelector('.menu-icon-close');
+        if (!toggle || !menu) return;
+        toggle.addEventListener('click', function () {
+          var open = menu.classList.toggle('hidden');
+          toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+          toggle.setAttribute('aria-label', open ? 'Menü öffnen' : 'Menü schließen');
+          if (openIcon && closeIcon) {
+            openIcon.classList.toggle('hidden', !open);
+            closeIcon.classList.toggle('hidden', open);
+          }
+        });
+        menu.querySelectorAll('a').forEach(function (a) {
+          a.addEventListener('click', function () {
+            menu.classList.add('hidden');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.setAttribute('aria-label', 'Menü öffnen');
+            if (openIcon && closeIcon) {
+              openIcon.classList.remove('hidden');
+              closeIcon.classList.add('hidden');
+            }
+          });
+        });
+      })();
+    </script>
 
     <main>
       <slot />
