@@ -594,7 +594,7 @@ Eine Story gilt als **fertig**, wenn **alle** folgenden Kriterien erfüllt sind:
     - Der Dozent kann aus mindestens 3 vordefinierten Musik-Tracks wählen (z.B. "Entspannt", "Spannend", "Episch").
     - Musik wird nur auf dem Beamer/Dozenten-Gerät abgespielt, **nicht** auf den Smartphones der Studenten.
     - Musik stoppt automatisch, wenn eine Frage aufgelöst wird (`SessionStatus.RESULTS`).
-    - Lautstärkeregler (0–100%) in der Dozenten-Ansicht.
+    - Lautstärkeregler (0–100 %) in der Dozenten-Ansicht.
     - Musik-Dateien sind lizenzfrei und werden als Assets gebundelt.
     - Konfigurierbar pro Quiz (`backgroundMusic: string | null`).
 - **Story 5.4 (Belohnungseffekte bei Platzierung):** 🟡 Als Student möchte ich bei einer vorderen Platzierung im Leaderboard eine visuelle Belohnung sehen, damit der Wettbewerb motivierend wird.
