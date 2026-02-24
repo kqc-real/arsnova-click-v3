@@ -20,7 +20,7 @@ Wir verwenden **Yjs** als CRDT-Framework (Conflict-free Replicated Data Types) k
 ## Konsequenzen
 
 ### Positiv
-- 100% DSGVO-Konformität: Keine personenbezogenen Inhalte auf dem Server
+- 100 % DSGVO-Konformität: Keine personenbezogenen Inhalte auf dem Server
 - Offline-Fähigkeit: Dozenten können Quizzes ohne Internetverbindung erstellen
 - Multi-Device-Sync ohne Cloud-Account
 - Konfliktfreie Zusammenarbeit durch CRDTs

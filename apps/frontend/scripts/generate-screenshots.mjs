@@ -19,7 +19,7 @@ async function createScreenshot(width, height, label, filename) {
       <text x="${width / 2}" y="${height * 0.50}" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="400" font-size="${Math.round(width * 0.03)}" fill="rgb(148,163,184)">Live-Quiz &amp; Abstimmung für Hochschulen</text>
       <rect x="${width * 0.3}" y="${height * 0.58}" width="${width * 0.4}" height="${height * 0.07}" rx="14" fill="rgb(14,165,233)"/>
       <text x="${width / 2}" y="${height * 0.625}" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="600" font-size="${Math.round(width * 0.025)}" fill="white">Quiz starten</text>
-      <text x="${width / 2}" y="${height * 0.92}" text-anchor="middle" font-family="system-ui,sans-serif" font-size="${Math.round(width * 0.02)}" fill="rgb(100,116,139)">100% DSGVO-konform · Open Source · Kostenlos</text>
+      <text x="${width / 2}" y="${height * 0.92}" text-anchor="middle" font-family="system-ui,sans-serif" font-size="${Math.round(width * 0.02)}" fill="rgb(100,116,139)">100 % DSGVO-konform · Open Source · Kostenlos</text>
     </svg>`;
 
   await sharp({ create: { width, height, channels: 4, background: bg } })

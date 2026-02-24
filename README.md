@@ -6,7 +6,7 @@
 [![Tech Stack: Prisma](https://img.shields.io/badge/ORM-Prisma-2D3748.svg?style=flat-square&logo=prisma)](https://www.prisma.io/)
 [![Documentation: ADRs](https://img.shields.io/badge/Docs-ADRs%20(DaC)-007A8A.svg?style=flat-square)](./docs/architecture/)
 
-> **Ein modernes, 100% DSGVO-konformes Audience-Response-System.**
+> **Ein modernes, 100 % DSGVO-konformes Audience-Response-System.**
 > Entwickelt im Rahmen des Hochschul-Moduls "Software Engineering & Vibe Coding".
 
 ## 📖 Über das Projekt

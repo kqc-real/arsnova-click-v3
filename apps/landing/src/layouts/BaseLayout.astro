@@ -12,7 +12,7 @@ const { title, description, canonical, noindex = false } = Astro.props;
 /** Base path für Links (z. B. /arsnova-click-v3/ bei GitHub Pages) */
 const base = (typeof import.meta.env.BASE_URL === 'string' && import.meta.env.BASE_URL) || '/';
 const site = 'https://arsnova.click';
-const fullTitle = title === 'Start' ? 'arsnova.click – Live-Quiz & Abstimmung. 100% DSGVO. Kostenlos.' : `${title} · arsnova.click`;
+const fullTitle = title === 'Start' ? 'arsnova.click – Live-Quiz & Abstimmung. 100 % DSGVO. Kostenlos.' : `${title} · arsnova.click`;
 const url = canonical ? new URL(canonical, site).href : site;
 const ogImage = new URL('/og.png', site).href;
 ---

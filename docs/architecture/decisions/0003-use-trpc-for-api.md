@@ -10,7 +10,7 @@ Wir benötigen eine API-Schicht zwischen Angular-Frontend und Node.js-Backend. K
 
 ## Entscheidung
 
-Wir verwenden **tRPC** als API-Schicht. Das Frontend importiert den **Router-Typ (`AppRouter`)** direkt aus dem Backend über den Path-Alias `@arsnova/api` (zeigt auf `apps/backend/src/routers/index.ts`). Geteilte Zod-Schemas und DTOs werden aus `@arsnova/shared-types` (`libs/shared-types`) importiert. Dadurch entsteht **100% End-to-End Typsicherheit** ohne Code-Generierung.
+Wir verwenden **tRPC** als API-Schicht. Das Frontend importiert den **Router-Typ (`AppRouter`)** direkt aus dem Backend über den Path-Alias `@arsnova/api` (zeigt auf `apps/backend/src/routers/index.ts`). Geteilte Zod-Schemas und DTOs werden aus `@arsnova/shared-types` (`libs/shared-types`) importiert. Dadurch entsteht **100 % End-to-End Typsicherheit** ohne Code-Generierung.
 
 tRPC wird auch für **WebSocket-Subscriptions** (Echtzeit-Abstimmungen) verwendet.
 
