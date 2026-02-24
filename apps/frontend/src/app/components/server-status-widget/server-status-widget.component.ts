@@ -11,12 +11,12 @@ import type { ServerStatsDTO } from '@arsnova/shared-types';
   standalone: true,
   template: `
     <div
-      class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-left dark:border-gray-700 dark:bg-gray-800"
+      class="rounded-lg border border-slate-500/80 bg-white p-3 text-left dark:border-indigo-300/60 dark:bg-indigo-950/75"
       role="status"
       aria-live="polite"
       [attr.aria-label]="ariaStatusLabel()"
     >
-      <div class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-50">
         <span
           class="h-2.5 w-2.5 shrink-0 rounded-full"
           [class.bg-green-500]="statusColor() === 'green'"
@@ -28,12 +28,12 @@ import type { ServerStatsDTO } from '@arsnova/shared-types';
         Server-Status
       </div>
       @if (stats(); as s) {
-        <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+        <p class="mt-1 text-xs text-slate-900 dark:text-slate-100">
           {{ s.activeSessions }} Quiz live · {{ s.totalParticipants }} Teilnehmer ·
           {{ s.completedSessions }} Quizzes durchgeführt
         </p>
       } @else {
-        <p class="mt-1 text-xs text-gray-500 dark:text-gray-500">Wird geladen…</p>
+        <p class="mt-1 text-xs text-slate-800 dark:text-slate-200">Wird geladen…</p>
       }
     </div>
   `,
