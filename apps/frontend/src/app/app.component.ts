@@ -159,11 +159,10 @@ export class AppComponent implements OnInit {
   readonly year = new Date().getFullYear();
   isOnline = signal(true);
 
-  constructor(private readonly themePreset: ThemePresetService) {
-    // Service beim App-Start initialisieren, damit Theme/Preset auf allen Seiten (z. B. Legal) greifen
-  }
+  constructor(private readonly themePreset: ThemePresetService) {}
 
   ngOnInit(): void {
+    void this.themePreset; // Nur injizieren, damit Theme/Preset beim App-Start aus localStorage angewendet werden
     this.isOnline.set(navigator.onLine);
   }
 

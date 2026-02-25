@@ -17,7 +17,8 @@
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/assets",
-              "src/manifest.webmanifest"
+              "src/manifest.webmanifest",
+              { "glob": "robots.txt", "input": "src", "output": "/" }
             ],
             "styles": ["src/styles.scss"],
             "scripts": [],
@@ -60,5 +61,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "d7676558-79b0-4190-a0f4-fb967153d3df"
   }
 }

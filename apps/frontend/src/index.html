@@ -13,8 +13,26 @@
     <meta name="apple-mobile-web-app-title" content="arsnova.click" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <!-- Fonts async + optional: nicht blockierend, weniger Layout-Shift (Lighthouse) -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700&family=Roboto:wght@400;500;700&display=optional"
+      media="print"
+      onload="this.media='all'"
+    />
+    <!-- Material Icons erst nach Load, um kritischen Pfad zu entlasten -->
+    <script>
+      window.addEventListener('load', function () {
+        var l = document.createElement('link');
+        l.rel = 'stylesheet';
+        l.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
+        document.head.appendChild(l);
+      });
+    </script>
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700&family=Roboto:wght@400;500;700&display=optional" />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    </noscript>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16x16.png" />

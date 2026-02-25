@@ -493,16 +493,16 @@ import { ThemePresetService } from '../../services/theme-preset.service';
     }
 
     .home-hero {
-      margin: 0 0 0.25rem;
-      font: var(--mat-sys-headline-small);
-      color: var(--mat-sys-on-surface-variant);
+      margin: 0 0 0.5rem;
+      font: var(--mat-sys-headline-medium);
+      color: var(--mat-sys-on-surface);
       text-align: center;
     }
 
     .home-trust-badges {
-      margin: 0 0 1rem;
-      font: var(--mat-sys-body-small);
-      color: var(--mat-sys-outline);
+      margin: 0 0 1.5rem;
+      font: var(--mat-sys-label-medium);
+      color: var(--mat-sys-on-surface-variant);
       text-align: center;
     }
 
@@ -524,7 +524,7 @@ import { ThemePresetService } from '../../services/theme-preset.service';
 
     .home-card {
       padding: 0.25rem;
-      box-shadow: var(--mat-sys-level4);
+      box-shadow: var(--mat-sys-level2);
     }
 
     .home-card--create mat-card-content {
@@ -671,7 +671,7 @@ import { ThemePresetService } from '../../services/theme-preset.service';
     }
 
     .home-grid mat-card {
-      box-shadow: var(--mat-sys-level4);
+      box-shadow: var(--mat-sys-level2);
     }
 
     .home-grid {
