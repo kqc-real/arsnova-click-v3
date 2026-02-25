@@ -11,7 +11,7 @@ import { Subject, takeUntil } from 'rxjs';
   selector: 'app-legal-page',
   imports: [RouterLink, MatButton, MatIcon],
   template: `
-    <div class="l-page l-section">
+    <div class="legal-page l-page">
       <a matButton routerLink="/" class="legal-back">
         <mat-icon>arrow_back</mat-icon>
         Startseite
@@ -22,67 +22,107 @@ import { Subject, takeUntil } from 'rxjs';
       } @else if (error()) {
         <p class="legal-error" role="alert">{{ error() }}</p>
       } @else if (content()) {
-        <article class="legal-content" [innerHTML]="content()"></article>
+        <article class="legal-article" [innerHTML]="content()"></article>
       }
     </div>
   `,
   styles: [`
+    .legal-page {
+      padding-bottom: 3rem;
+    }
+
     .legal-back {
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
     }
 
     .legal-loading,
     .legal-error {
       color: var(--mat-sys-on-surface-variant);
-      font: var(--mat-sys-body-medium);
+      font: var(--mat-sys-body-large);
     }
 
     .legal-error {
       color: var(--mat-sys-error);
     }
 
-    .legal-content {
-      font: var(--mat-sys-body-medium);
+    .legal-article {
+      font: var(--mat-sys-body-large);
       color: var(--mat-sys-on-surface);
-      line-height: 1.6;
+      line-height: 1.7;
+      max-inline-size: 65ch;
+      margin-inline: auto;
     }
 
-    .legal-content :deep(h1) {
-      font: var(--mat-sys-headline-medium);
+    .legal-article :deep(h1) {
+      font: var(--mat-sys-headline-large);
+      color: var(--mat-sys-on-surface);
+      margin: 0 0 0.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--mat-sys-outline-variant);
+    }
+
+    .legal-article :deep(h1 + p) {
+      margin-top: 0;
+      font: var(--mat-sys-body-medium);
+      color: var(--mat-sys-on-surface-variant);
+    }
+
+    .legal-article :deep(h2) {
+      font: var(--mat-sys-title-large);
+      color: var(--mat-sys-on-surface);
+      margin: 2rem 0 0.5rem;
+    }
+
+    .legal-article :deep(h2:first-of-type) {
+      margin-top: 1.5rem;
+    }
+
+    .legal-article :deep(p) {
       margin: 0 0 1rem;
     }
 
-    .legal-content :deep(h2) {
-      font: var(--mat-sys-title-large);
-      margin: 1.5rem 0 0.5rem;
+    .legal-article :deep(p:last-child) {
+      margin-bottom: 0;
     }
 
-    .legal-content :deep(p) {
-      margin: 0 0 0.75rem;
-    }
-
-    .legal-content :deep(ul) {
-      margin: 0 0 0.75rem;
+    .legal-article :deep(ul) {
+      margin: 0 0 1rem;
       padding-left: 1.5rem;
     }
 
-    .legal-content :deep(hr) {
+    .legal-article :deep(li) {
+      margin-bottom: 0.5rem;
+    }
+
+    .legal-article :deep(li::marker) {
+      color: var(--mat-sys-primary);
+    }
+
+    .legal-article :deep(hr) {
       border: none;
       border-top: 1px solid var(--mat-sys-outline-variant);
-      margin: 1.5rem 0;
+      margin: 2rem 0;
     }
 
-    .legal-content :deep(a) {
+    .legal-article :deep(strong) {
+      font-weight: 600;
+      color: var(--mat-sys-on-surface);
+    }
+
+    .legal-article :deep(a) {
       color: var(--mat-sys-primary);
       text-decoration: none;
+      border-radius: 2px;
+      transition: text-decoration 0.15s ease;
     }
 
-    .legal-content :deep(a:hover) {
+    .legal-article :deep(a:hover) {
       text-decoration: underline;
     }
 
-    .legal-content :deep(li) {
-      margin-bottom: 0.25rem;
+    .legal-article :deep(a:focus-visible) {
+      outline: 2px solid var(--mat-sys-primary);
+      outline-offset: 2px;
     }
   `],
 })

@@ -10,6 +10,7 @@ import { MatChip, MatChipSet } from '@angular/material/chips';
 import { MatIcon } from '@angular/material/icon';
 import { trpc } from '../../trpc.client';
 import { ServerStatusWidgetComponent } from '../../components/server-status-widget/server-status-widget.component';
+import { ThemePresetService } from '../../services/theme-preset.service';
 
 @Component({
   selector: 'app-home',
@@ -87,7 +88,7 @@ import { ServerStatusWidgetComponent } from '../../components/server-status-widg
 
           <div class="home-controls desktop-only">
             <mat-button-toggle-group
-              [value]="preset()"
+              [value]="themePreset.preset()"
               (change)="setPreset($event.value)"
               appearance="standard"
               aria-label="Preset auswählen"
@@ -102,7 +103,7 @@ import { ServerStatusWidgetComponent } from '../../components/server-status-widg
             </mat-button-toggle-group>
 
             <mat-button-toggle-group
-              [value]="theme()"
+              [value]="themePreset.theme()"
               (change)="onThemeChange($event.value)"
               appearance="standard"
               aria-label="Theme"
@@ -136,7 +137,7 @@ import { ServerStatusWidgetComponent } from '../../components/server-status-widg
         @if (controlsMenuOpen()) {
           <div id="home-controls-mobile" class="home-controls-mobile l-stack l-stack--sm">
             <mat-button-toggle-group
-              [value]="preset()"
+              [value]="themePreset.preset()"
               (change)="setPreset($event.value, true)"
               appearance="standard"
               aria-label="Preset auswählen"
@@ -151,7 +152,7 @@ import { ServerStatusWidgetComponent } from '../../components/server-status-widg
             </mat-button-toggle-group>
 
             <mat-button-toggle-group
-              [value]="theme()"
+              [value]="themePreset.theme()"
               (change)="onThemeChange($event.value)"
               appearance="standard"
               aria-label="Theme"
@@ -788,7 +789,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   joinError = signal<string | null>(null);
   isJoining = signal(false);
 
-  theme = signal<'system' | 'dark' | 'light'>('dark');
+  readonly themePreset = inject(ThemePresetService);
   readonly supportedLanguages = [
     { code: 'de' as const, label: 'Deutsch' },
     { code: 'en' as const, label: 'English' },
@@ -797,7 +798,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     { code: 'es' as const, label: 'Español' },
   ];
   language = signal<'de' | 'en' | 'fr' | 'it' | 'es'>('de');
-  preset = signal<'serious' | 'spielerisch'>('spielerisch');
   controlsMenuOpen = signal(false);
   presetToastVisible = signal(false);
   presetToastTitle = signal('');
@@ -814,25 +814,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-    const storedTheme = localStorage.getItem('home-theme');
-    if (storedTheme === 'system' || storedTheme === 'dark' || storedTheme === 'light') {
-      this.theme.set(storedTheme);
-    }
-    this.applyTheme();
-
     const storedLang = localStorage.getItem('home-language');
     if (storedLang && ['de', 'en', 'fr', 'it', 'es'].includes(storedLang)) {
       this.language.set(storedLang as 'de' | 'en' | 'fr' | 'it' | 'es');
-    }
-
-    const storedPreset = localStorage.getItem('home-preset');
-    const preset = storedPreset === 'serioes' ? 'serious' : storedPreset; // Migration: serioes → serious
-    if (preset === 'serious' || preset === 'spielerisch') {
-      this.preset.set(preset);
-      this.applyPreset();
-      if (preset !== storedPreset) localStorage.setItem('home-preset', preset);
-    } else {
-      this.applyPreset(); // Default: spielerisch
     }
 
     this.loadRecentSessionCodes();
@@ -896,17 +880,14 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onThemeChange(value: 'system' | 'dark' | 'light'): void {
-    this.theme.set(value);
-    localStorage.setItem('home-theme', value);
-    this.applyTheme();
+    this.themePreset.setTheme(value);
     this.closeControlsMenu();
   }
 
-  setPreset(nextPreset: 'serious' | 'spielerisch', closeMenu = false): void {
-    if (this.preset() !== nextPreset) {
-      this.preset.set(nextPreset);
-      localStorage.setItem('home-preset', nextPreset);
-      this.applyPreset();
+  setPreset(value: string | null, closeMenu = false): void {
+    const nextPreset = value === 'serious' || value === 'spielerisch' ? value : null;
+    if (nextPreset && this.themePreset.preset() !== nextPreset) {
+      this.themePreset.setPreset(nextPreset);
       this.showPresetToast(nextPreset);
     }
     if (closeMenu) this.closeControlsMenu();
@@ -976,22 +957,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     } finally {
       this.isJoining.set(false);
     }
-  }
-
-  private applyTheme(): void {
-    const root = document.documentElement;
-    root.classList.remove('dark', 'light');
-    const selected = this.theme();
-    if (selected === 'dark') {
-      root.classList.add('dark');
-    } else if (selected === 'light') {
-      root.classList.add('light');
-    }
-  }
-
-  private applyPreset(): void {
-    const root = document.documentElement;
-    root.classList.toggle('preset-playful', this.preset() === 'spielerisch');
   }
 
   private showPresetToast(preset: 'serious' | 'spielerisch'): void {

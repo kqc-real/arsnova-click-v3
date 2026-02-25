@@ -2,6 +2,7 @@ import { Component, HostListener, OnInit, signal } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
+import { ThemePresetService } from './services/theme-preset.service';
 
 @Component({
   selector: 'app-root',
@@ -157,6 +158,10 @@ import { MatIcon } from '@angular/material/icon';
 export class AppComponent implements OnInit {
   readonly year = new Date().getFullYear();
   isOnline = signal(true);
+
+  constructor(private readonly themePreset: ThemePresetService) {
+    // Service beim App-Start initialisieren, damit Theme/Preset auf allen Seiten (z. B. Legal) greifen
+  }
 
   ngOnInit(): void {
     this.isOnline.set(navigator.onLine);
