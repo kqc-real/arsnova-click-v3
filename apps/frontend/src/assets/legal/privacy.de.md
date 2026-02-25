@@ -25,9 +25,9 @@ Diese statische Website setzt **keine Cookies** und führt keine Analyse-Tools (
 
 Auf dieser Website werden Links zu externen Diensten gesetzt (z. B. GitHub). Beim Klick auf solche Links gelangen Sie auf die Seiten der jeweiligen Anbieter. Dort gelten die Datenschutzerklärungen und Nutzungsbedingungen der jeweiligen Anbieter. Wir haben keinen Einfluss auf deren Datenverarbeitung.
 
-## 5. Hosting (z. B. GitHub Pages)
+## 5. Hosting
 
-Wird diese Website bei einem Diensteanbieter gehostet (z. B. GitHub Pages in den USA), können Zugriffsdaten auf Servern des Anbieters verarbeitet werden. In solchen Fällen kann eine Übermittlung in Drittländer erfolgen. GitHub verarbeitet Daten gemäß seiner Datenschutzerklärung und bietet geeignete Garantien (z. B. Standardvertragsklauseln). Weitere Informationen: [GitHub Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement).
+Website und Anwendung können bei Diensteanbietern (Hosting-Providern) gehostet werden. Dabei können Zugriffsdaten (z. B. IP-Adresse, Zugriffszeit) auf Servern der Anbieter anfallen. Wird in Drittländern (z. B. USA) gehostet, kann eine Übermittlung dorthin erfolgen; dann werden geeignete Garantien (z. B. Standardvertragsklauseln nach Art. 46 DSGVO) vereinbart. Die Informations- und Marketingseite wird ggf. bei GitHub Pages betrieben; Informationen: [GitHub Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement). Die Anwendung arsnova.click kann auf anderem Wege (z. B. eigener Server, EU-Standort) betrieben werden – der konkrete Anbieter und Speicherort ergeben sich aus dem jeweiligen Angebot.
 
 ## 6. Ihre Rechte
 
