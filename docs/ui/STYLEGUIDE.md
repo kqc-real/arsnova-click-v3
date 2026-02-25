@@ -70,6 +70,18 @@ Tokenbasierte Card-Flaeche:
 }
 ```
 
+## Preset Spielerisch (Startseite)
+- **Hintergrund:** Verlauf mit Primary-/Tertiary-Container (Token `--app-bg-root`).
+- **Karten:** Zusaetzlicher Schatten mit Primary-Anteil (`--app-shadow-card-playful`). Nur die ersten beiden Karten (Beitreten, Erstellen) haben Hover: leichtes Anheben + Scale aus der Mitte, nur bei `prefers-reduced-motion: no-preference`.
+- **Haupt-CTA:** Der gefuellte Button „Session erstellen“ erhaelt im Spielerisch-Modus einen dezenten Glow (`--app-shadow-cta-glow`).
+- **Header:** Gradient, dezenter Primary-Rahmen, `--app-shadow-accent`.
+- Alle Werte tokenbasiert in `styles.scss` (html.preset-playful) und Home-Komponente.
+
+## Startseite: Buttons und Toast
+- **Button-Hierarchie:** Nur ein gefuellter CTA pro Kontext (z. B. „Session erstellen“ auf der Erstellen-Karte). Uebrige Aktionen als Text-Buttons ohne Umrandung (Bibliothek, Erstellen-Karte: Quiz auswaehlen, Q&amp;A, Hilfe).
+- **Toast (Preset-Hinweis):** Zentriert, mit Close-Button; Schliessen per Klick auf Backdrop oder Button. Kein Auto-Close-Timer.
+- **Abstaende:** Einheitlicher Button-/Link-Abstand auf Karten ueber `l-stack--sm` (0,5rem).
+
 ## Nicht erlaubt
 - Tailwind-Klassen im Repository.
 - Direkte Ueberschreibung interner Material-Klassen.

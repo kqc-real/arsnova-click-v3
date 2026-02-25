@@ -40,8 +40,11 @@ Aktuell definierte App-Tokens:
 }
 
 html.preset-playful {
-  --app-bg-root: linear-gradient(135deg, ...surface-container-Stufen...);
-  --app-shadow-accent: 0 10px 30px -14px var(--mat-sys-primary);
+  --app-bg-root: linear-gradient(145deg, surface-container-lowest → tertiary → primary-container → surface);
+  --app-shadow-accent: 0 14px 44px -10px color-mix(in srgb, var(--mat-sys-primary) 50%, transparent);
+  --app-shadow-card-playful: 0 8px 28px -6px color-mix(in srgb, var(--mat-sys-primary) 35%, transparent);
+  --app-shadow-cta-glow: 0 0 20px color-mix(in srgb, var(--mat-sys-primary) 45%, transparent);
+  --app-corner-playful: 1.5rem;
 }
 ```
 
