@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 
 /**
  * Quiz-Verwaltungsseite (Epic 1).
@@ -8,39 +11,75 @@ import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-quiz',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, MatButtonModule, MatCardModule, MatIconModule],
   template: `
-    <div class="min-h-screen bg-gray-50 dark:bg-gray-950 p-4">
-      <div class="mx-auto max-w-2xl">
-        <div class="flex items-center justify-between mb-6">
-          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Meine Quizzes</h1>
-          <a
-            routerLink="/"
-            class="text-sm text-indigo-600 hover:underline dark:text-indigo-400"
-            aria-label="Zurück zur Startseite"
-          >
-            ← Startseite
-          </a>
-        </div>
+    <div class="l-page l-section">
+      <div class="quiz-page__header">
+        <h1 class="quiz-page__title">
+          <mat-icon class="quiz-page__title-icon">quiz</mat-icon>
+          Meine Quizzes
+        </h1>
+        <a mat-button routerLink="/" aria-label="Zurück zur Startseite">
+          <mat-icon>arrow_back</mat-icon>
+          Startseite
+        </a>
+      </div>
 
-        <div class="rounded-xl border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-700">
-          <p class="text-gray-500 dark:text-gray-400 mb-4">
+      <mat-card appearance="outlined" class="quiz-empty-state">
+        <mat-card-content class="quiz-empty-state__content">
+          <p class="quiz-empty-state__text">
             Noch keine Quizzes vorhanden.
           </p>
-          <button
-            class="rounded-lg bg-indigo-600 px-6 py-3 text-white font-medium
-                   hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
-                   dark:focus:ring-offset-gray-950"
-            aria-label="Neues Quiz erstellen"
-          >
-            + Neues Quiz erstellen
+          <button mat-flat-button aria-label="Neues Quiz erstellen">
+            <mat-icon>add_circle</mat-icon>
+            Neues Quiz erstellen
           </button>
-          <p class="mt-4 text-xs text-gray-400 dark:text-gray-500">
+          <p class="quiz-empty-state__hint">
             Story 1.1 – Wird in Epic 1 implementiert.
           </p>
-        </div>
-      </div>
+        </mat-card-content>
+      </mat-card>
     </div>
   `,
+  styles: [`
+    .quiz-page__header {
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .quiz-page__title {
+      margin: 0;
+      font: var(--mat-sys-headline-small);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .quiz-page__title-icon {
+      font-size: 1.5rem;
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .quiz-empty-state__content {
+      text-align: center;
+      padding: clamp(2rem, 5vw, 3rem) 1rem;
+    }
+
+    .quiz-empty-state__text {
+      margin: 0 0 1rem;
+      color: var(--mat-sys-on-surface-variant);
+      font: var(--mat-sys-body-medium);
+    }
+
+    .quiz-empty-state__hint {
+      margin: 1rem 0 0;
+      color: var(--mat-sys-on-surface-variant);
+      font: var(--mat-sys-body-small);
+    }
+  `],
 })
 export class QuizComponent {}

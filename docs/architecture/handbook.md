@@ -15,7 +15,7 @@ Das Hauptziel dieses Systems ist es, ein hochperformantes Audience-Response-Syst
 ## 2. Der Technologie-Stack (High-Level)
 Wir setzen auf einen modernen, stark typisierten TypeScript-Stack (Full-Stack), der auf Typsicherheit, Entwicklererfahrung (DX) und Echtzeit-Performance optimiert ist.
 
-* **Frontend:** Angular (v17+, aktuell 19) mit **Signals** (Zustandsverwaltung), **Standalone Components** und **Tailwind CSS**.
+* **Frontend:** Angular (v17+, aktuell 19) mit **Signals** (Zustandsverwaltung), **Standalone Components** und **Angular Material 3** (tokenbasiert, ohne Tailwind).
 * **Backend:** Node.js API mit **tRPC** (für typsichere Aufrufe und WebSocket-Subscriptions).
 * **Datenbank (Persistenz):** **PostgreSQL** angebunden über **Prisma ORM**.
 * **Echtzeit-Broker (Flüchtig):** **Redis** (Pub/Sub für Abstimmungen).
@@ -47,6 +47,7 @@ Wir dokumentieren jede signifikante Änderung an der Architektur, neue Bibliothe
 * [ADR-0002: Nutzung von Angular Signals](./decisions/0002-use-angular-signals-for-ui-state.md)
 * [ADR-0003: Nutzung von tRPC](./decisions/0003-use-trpc-for-api.md)
 * [ADR-0004: Nutzung von Yjs (CRDTs) für Offline-Sync](./decisions/0004-use-yjs-for-local-first-storage.md)
+* [ADR-0005: UI-Strategie mit Angular Material 3 (ohne Tailwind)](./decisions/0005-use-angular-material-design.md)
 
 ---
 

@@ -5,7 +5,7 @@
 ---
 **Rolle & Kontext:**
 Du bist ein Senior Full-Stack Entwickler. Wir bauen zusammen "arsnova.click V3". 
-Unser Stack: Angular 17+ (Signals, Standalone, Tailwind), Node.js Backend mit tRPC und PostgreSQL (via Prisma).
+Unser Stack: Angular 17+ (Signals, Standalone, Angular Material 3 ohne Tailwind), Node.js Backend mit tRPC und PostgreSQL (via Prisma).
 
 Hier ist mein aktuelles Datenbank-Schema:
 `[HIER DAS PRISMA-SCHEMA EINFÜGEN]`

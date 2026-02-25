@@ -96,7 +96,7 @@ arsnova-click-v3/
 | Paket | npm-Name | Aufgabe |
 |-------|----------|---------|
 | `apps/backend` | `@arsnova/backend` | API-Server – empfängt Requests, validiert mit Zod, greift auf DB zu |
-| `apps/frontend` | `@arsnova/frontend` | Browser-App – Angular-Standalone-Components mit Tailwind CSS |
+| `apps/frontend` | `@arsnova/frontend` | Browser-App – Angular-Standalone-Components mit Angular Material 3 und SCSS-Patterns |
 | `libs/shared-types` | `@arsnova/shared-types` | Geteilte Verträge – Zod-Schemas, die **beide** Seiten importieren |
 
 > **Typsicherheit:** Wenn du ein Feld im Prisma-Schema änderst, muss das passende Zod-Schema in `libs/shared-types/src/schemas.ts` aktualisiert werden. Andernfalls schlägt der Build fehl.
@@ -122,7 +122,7 @@ Das System ist nach dem **Local-First**-Prinzip entworfen:
 | Komponente | Beschreibung |
 |---|---|
 | Express + tRPC-Server | Backend auf Port 3000 mit `health.check`, `health.stats`, `health.ping` (Subscription) |
-| Angular 19 Frontend | Standalone Components, Signals, Tailwind CSS, Startseite mit Server-Status-Widget |
+| Angular 19 Frontend | Standalone Components, Signals, Angular Material 3, tokenbasiertes Theming, Startseite mit Server-Status-Widget |
 | tRPC-Client | `httpBatchLink` (Queries/Mutations) + `wsLink` (Subscriptions) |
 | Redis-Anbindung | `ioredis`-Client, Health-Check, Rate-Limiting (Sliding-Window), Session-Code-Lockout |
 | tRPC WebSocket | Separater WebSocket-Server (Port 3001) für Subscriptions |
@@ -255,7 +255,7 @@ Das Frontend nutzt modernste Angular-Features:
 | **Signals statt RxJS** | Für UI-State ausschließlich Angular Signals verwenden. RxJS nur für WebSocket-Streams |
 | **Security First** | Neues Feld an einer Frage? → Prüfen, ob es im `QuestionStudentDTO` entfernt werden muss |
 | **Standalone Components** | Keine `NgModules`. Neue `@if`/`@for` Control-Flow-Syntax, kein `*ngIf`/`*ngFor` |
-| **Tailwind CSS** | Styling inline via Tailwind-Klassen, keine separaten SCSS-Dateien |
+| **Angular Material 3 + SCSS-Patterns** | Styling ueber Material-Komponenten, Design-Tokens und zentrale SCSS-Patterns (ohne Tailwind) |
 | **ADRs schreiben** | Architekturentscheidungen als ADR in `docs/architecture/decisions/` dokumentieren |
 
 ---

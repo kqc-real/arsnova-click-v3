@@ -13,7 +13,7 @@ graph TB
     subgraph "Monorepo (npm Workspaces)"
         subgraph "Frontend - Angular 17+ (aktuell 19)"
             FE[Angular App<br/>Port 4200]
-            FE_COMP[Standalone Components<br/>Signals · Tailwind CSS]
+            FE_COMP[Standalone Components<br/>Signals · Angular Material 3]
             FE_ROUTES[Routing<br/>/quiz /session /vote]
             FE_SERVICES[Services<br/>tRPC Client · Yjs · Theme · i18n]
         end
@@ -251,7 +251,9 @@ mindmap
         Standalone Components
         Signals
         Control Flow @if @for
-      Tailwind CSS
+      Angular Material 3
+        Design Tokens
+        SCSS Patterns
       tRPC Client
         httpBatchLink
         wsLink

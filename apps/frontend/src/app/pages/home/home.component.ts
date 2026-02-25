@@ -1,446 +1,727 @@
-import { CommonModule } from '@angular/common';
 import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
 import { trpc } from '../../trpc.client';
 import { ServerStatusWidgetComponent } from '../../components/server-status-widget/server-status-widget.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, ServerStatusWidgetComponent],
+  imports: [
+    RouterLink,
+    MatButtonModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatInputModule,
+    MatButtonToggleModule,
+    MatMenuModule,
+    MatChipsModule,
+    MatIconModule,
+    ServerStatusWidgetComponent,
+  ],
   template: `
-    <div
-      class="min-h-screen px-4 py-6 text-slate-900 dark:text-slate-50 sm:px-6 lg:px-8"
-      [ngClass]="rootToneClass()"
-    >
-      <div class="mx-auto max-w-6xl">
-        @if (presetToastVisible()) {
-          <div class="fixed bottom-4 right-4 z-[70] w-[min(92vw,24rem)] rounded-xl border border-slate-300 bg-white/95 p-3 text-sm shadow-xl dark:border-indigo-300/45 dark:bg-indigo-950/90">
-            <p class="font-semibold text-slate-900 dark:text-slate-50">{{ presetToastTitle() }}</p>
-            <p class="mt-1 text-xs text-slate-600 dark:text-slate-300">Preset-Wirkung</p>
-            <div class="mt-2 flex flex-wrap gap-1.5">
-              @for (item of presetToastOn(); track item) {
-                <span class="inline-flex items-center rounded-full border border-emerald-500/40 bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
-                  {{ item }} an
-                </span>
-              }
-              @for (item of presetToastOff(); track item) {
-                <span class="inline-flex items-center rounded-full border border-rose-500/35 bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-800 dark:bg-rose-900/35 dark:text-rose-200">
-                  {{ item }} aus
-                </span>
-              }
-            </div>
-            @if (presetToastHint()) {
-              <p class="mt-2 text-xs text-slate-700 dark:text-slate-200">{{ presetToastHint() }}</p>
+    <div class="l-page">
+      @if (presetToastVisible()) {
+        <div class="preset-toast">
+          <p class="preset-toast__title">{{ presetToastTitle() }}</p>
+          <p class="preset-toast__subtitle">Preset-Wirkung</p>
+          <mat-chip-set class="preset-toast__chips">
+            @for (item of presetToastOn(); track item) {
+              <mat-chip highlighted>{{ item }} an</mat-chip>
             }
+            @for (item of presetToastOff(); track item) {
+              <mat-chip>{{ item }} aus</mat-chip>
+            }
+          </mat-chip-set>
+          @if (presetToastHint()) {
+            <p class="preset-toast__hint">{{ presetToastHint() }}</p>
+          }
+        </div>
+      }
+
+      <header #homeHeader class="home-header" role="banner">
+        <div class="home-header__row">
+          <div class="home-brand">
+            <svg class="home-brand__icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <defs>
+                <linearGradient id="brand-fg" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="var(--mat-sys-primary)" />
+                  <stop offset="100%" stop-color="var(--mat-sys-tertiary)" />
+                </linearGradient>
+              </defs>
+              <rect width="32" height="32" rx="6" fill="url(#brand-fg)" />
+              <rect x="2" y="2" width="28" height="28" rx="5" fill="var(--mat-sys-surface)" />
+              <circle cx="24" cy="22" r="4" fill="var(--mat-sys-primary)" />
+            </svg>
+            <h1 class="home-brand__title">arsnova.click</h1>
+          </div>
+
+          <button
+            #controlsToggleBtn
+            mat-icon-button
+            class="mobile-only"
+            [attr.aria-expanded]="controlsMenuOpen() ? 'true' : 'false'"
+            aria-controls="home-controls-mobile"
+            aria-label="Schalter öffnen"
+            (click)="toggleControlsMenu()"
+          >
+            <mat-icon>menu</mat-icon>
+          </button>
+
+          <div class="home-controls desktop-only">
+            <mat-button-toggle-group
+              [value]="theme()"
+              (change)="onThemeChange($event.value)"
+              appearance="standard"
+              aria-label="Theme"
+              class="home-icon-toggles"
+            >
+              <mat-button-toggle value="system" aria-label="System">
+                <mat-icon>contrast</mat-icon>
+              </mat-button-toggle>
+              <mat-button-toggle value="dark" aria-label="Dark">
+                <mat-icon>dark_mode</mat-icon>
+              </mat-button-toggle>
+              <mat-button-toggle value="light" aria-label="Light">
+                <mat-icon>light_mode</mat-icon>
+              </mat-button-toggle>
+            </mat-button-toggle-group>
+
+            <button mat-icon-button [matMenuTriggerFor]="langMenu" aria-label="Sprache" class="home-icon-btn">
+              <mat-icon>language</mat-icon>
+            </button>
+            <mat-menu #langMenu="matMenu">
+              <button mat-menu-item (click)="language.set('de')">
+                <mat-icon matMenuItemIcon>language</mat-icon>
+                DE
+              </button>
+              <button mat-menu-item (click)="language.set('en')">
+                <mat-icon matMenuItemIcon>language</mat-icon>
+                EN
+              </button>
+            </mat-menu>
+
+            <mat-button-toggle-group
+              [value]="preset()"
+              (change)="setPreset($event.value)"
+              appearance="standard"
+              aria-label="Preset auswählen"
+              class="home-icon-toggles"
+            >
+              <mat-button-toggle value="serious">
+                <mat-icon>school</mat-icon> Seriös
+              </mat-button-toggle>
+              <mat-button-toggle value="spielerisch">
+                <mat-icon class="home-preset-icon--playful">celebration</mat-icon> Spielerisch
+              </mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+        </div>
+
+        @if (controlsMenuOpen()) {
+          <div id="home-controls-mobile" class="home-controls-mobile l-stack l-stack--sm">
+            <mat-button-toggle-group
+              [value]="theme()"
+              (change)="onThemeChange($event.value)"
+              appearance="standard"
+              aria-label="Theme"
+              class="home-icon-toggles home-icon-toggles--full"
+            >
+              <mat-button-toggle value="system" aria-label="System">
+                <mat-icon>contrast</mat-icon>
+              </mat-button-toggle>
+              <mat-button-toggle value="dark" aria-label="Dark">
+                <mat-icon>dark_mode</mat-icon>
+              </mat-button-toggle>
+              <mat-button-toggle value="light" aria-label="Light">
+                <mat-icon>light_mode</mat-icon>
+              </mat-button-toggle>
+            </mat-button-toggle-group>
+
+            <button mat-icon-button [matMenuTriggerFor]="langMenuMobile" aria-label="Sprache" class="home-icon-btn">
+              <mat-icon>language</mat-icon>
+            </button>
+            <mat-menu #langMenuMobile="matMenu">
+              <button mat-menu-item (click)="language.set('de'); closeControlsMenu()">
+                <mat-icon matMenuItemIcon>language</mat-icon>
+                DE
+              </button>
+              <button mat-menu-item (click)="language.set('en'); closeControlsMenu()">
+                <mat-icon matMenuItemIcon>language</mat-icon>
+                EN
+              </button>
+            </mat-menu>
+
+            <mat-button-toggle-group
+              [value]="preset()"
+              (change)="setPreset($event.value, true)"
+              appearance="standard"
+              aria-label="Preset auswählen"
+              class="home-icon-toggles home-preset-toggle--full"
+            >
+              <mat-button-toggle value="serious">
+                <mat-icon>school</mat-icon> Seriös
+              </mat-button-toggle>
+              <mat-button-toggle value="spielerisch">
+                <mat-icon class="home-preset-icon--playful">celebration</mat-icon> Spielerisch
+              </mat-button-toggle>
+            </mat-button-toggle-group>
           </div>
         }
+      </header>
 
-        <header
-          #homeHeader
-          class="relative z-50 mb-6 rounded-2xl border p-4 backdrop-blur"
-          [ngClass]="headerToneClass()"
-        >
-          <div class="flex items-center justify-between gap-4">
-            <div class="inline-flex items-center gap-2">
-              <img src="assets/icons/favicon.svg" alt="" class="h-7 w-7 rounded-md" />
-              <h1 class="text-xl font-semibold tracking-tight">arsnova.click <span class="text-sky-500 dark:text-sky-400">V3</span></h1>
-            </div>
-
-            <button
-              #controlsToggleBtn
-              type="button"
-              class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white/80 text-slate-700 dark:border-indigo-300/30 dark:bg-indigo-950/55 dark:text-slate-200 md:hidden"
-              [attr.aria-expanded]="controlsMenuOpen() ? 'true' : 'false'"
-              aria-controls="home-controls-mobile"
-              aria-label="Schalter öffnen"
-              (click)="toggleControlsMenu()"
-            >
-              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" />
-              </svg>
-            </button>
-
-            <div class="hidden flex-wrap items-center gap-2 text-sm md:flex">
-              <label class="inline-flex items-center gap-2 rounded-lg border px-2.5 py-2" [ngClass]="controlToneClass()">
-                <svg class="h-4 w-4 text-slate-800 dark:text-slate-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.5M12 18.5V21M4.93 4.93l1.77 1.77M17.3 17.3l1.77 1.77M3 12h2.5M18.5 12H21M4.93 19.07l1.77-1.77M17.3 6.7l1.77-1.77" />
-                  <circle cx="12" cy="12" r="4" />
-                </svg>
-                <select
-                  class="bg-transparent text-slate-900 outline-none dark:text-slate-100"
-                  [value]="theme()"
-                  (change)="onThemeChange(($any($event.target).value))"
-                  aria-label="Theme auswählen"
-                >
-                  <option value="system">System</option>
-                  <option value="dark">Dark</option>
-                  <option value="light">Light</option>
-                </select>
-              </label>
-              <label class="inline-flex items-center gap-2 rounded-lg border px-2.5 py-2" [ngClass]="controlToneClass()">
-                <svg class="h-4 w-4 text-slate-800 dark:text-slate-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                  <circle cx="12" cy="12" r="9" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18M12 3a13 13 0 0 1 0 18M12 3a13 13 0 0 0 0 18" />
-                </svg>
-                <select
-                  class="bg-transparent text-slate-900 outline-none dark:text-slate-100"
-                  [value]="language()"
-                  (change)="language.set($any($event.target).value)"
-                  aria-label="Sprache auswählen"
-                >
-                  <option value="de">DE</option>
-                  <option value="en">EN</option>
-                </select>
-              </label>
-              <div class="inline-flex items-center gap-1 rounded-lg border p-1" [ngClass]="controlToneClass()" aria-label="Preset auswählen">
-                <button
-                  type="button"
-                  class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm"
-                  [ngClass]="{
-                    'bg-sky-500 text-slate-950': preset() === 'serioes',
-                    'text-slate-800 hover:bg-slate-300 dark:text-slate-100 dark:hover:bg-indigo-800/80': preset() !== 'serioes',
-                  }"
-                  (click)="setPreset('serioes')"
-                >
-                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 3v5c0 4.6-2.9 8.6-7 10-4.1-1.4-7-5.4-7-10V6l7-3z" />
-                  </svg>
-                  <span>Seriös</span>
-                </button>
-                <button
-                  type="button"
-                  class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm"
-                  [ngClass]="{
-                    'bg-fuchsia-500 text-slate-950': preset() === 'spielerisch',
-                    'text-slate-800 hover:bg-slate-300 dark:text-slate-100 dark:hover:bg-indigo-800/80': preset() !== 'spielerisch',
-                  }"
-                  (click)="setPreset('spielerisch')"
-                >
-                  <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M12 2l2.1 5.3L20 9.4l-4.5 3.7L16.8 19 12 15.8 7.2 19l1.3-5.9L4 9.4l5.9-2.1L12 2z" />
-                  </svg>
-                  <span>Spielerisch</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          @if (controlsMenuOpen()) {
-            <div id="home-controls-mobile" class="mt-4 grid gap-2 border-t border-slate-400/70 pt-4 dark:border-indigo-300/40 md:hidden">
-              <label class="inline-flex items-center justify-between gap-2 rounded-lg border px-3 py-2" [ngClass]="controlToneClass()">
-                <svg class="h-4 w-4 text-slate-800 dark:text-slate-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.5M12 18.5V21M4.93 4.93l1.77 1.77M17.3 17.3l1.77 1.77M3 12h2.5M18.5 12H21M4.93 19.07l1.77-1.77M17.3 6.7l1.77-1.77" />
-                  <circle cx="12" cy="12" r="4" />
-                </svg>
-                <select
-                  #mobileThemeSelect
-                  class="bg-transparent text-slate-900 outline-none dark:text-slate-100"
-                  [value]="theme()"
-                  (change)="onThemeChange(($any($event.target).value))"
-                  aria-label="Theme auswählen"
-                >
-                  <option value="system">System</option>
-                  <option value="dark">Dark</option>
-                  <option value="light">Light</option>
-                </select>
-              </label>
-
-              <label class="inline-flex items-center justify-between gap-2 rounded-lg border px-3 py-2" [ngClass]="controlToneClass()">
-                <svg class="h-4 w-4 text-slate-800 dark:text-slate-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                  <circle cx="12" cy="12" r="9" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18M12 3a13 13 0 0 1 0 18M12 3a13 13 0 0 0 0 18" />
-                </svg>
-                <select
-                  class="bg-transparent text-slate-900 outline-none dark:text-slate-100"
-                  [value]="language()"
-                  (change)="language.set($any($event.target).value)"
-                  aria-label="Sprache auswählen"
-                >
-                  <option value="de">DE</option>
-                  <option value="en">EN</option>
-                </select>
-              </label>
-
-              <div class="inline-flex items-center gap-1 rounded-lg border p-1" [ngClass]="controlToneClass()" aria-label="Preset auswählen">
-                <button
-                  type="button"
-                  class="flex-1 inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm"
-                  [ngClass]="{
-                    'bg-sky-500 text-slate-950': preset() === 'serioes',
-                    'text-slate-800 hover:bg-slate-300 dark:text-slate-100 dark:hover:bg-indigo-800/80': preset() !== 'serioes',
-                  }"
-                  (click)="setPreset('serioes', true)"
-                >
-                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 3v5c0 4.6-2.9 8.6-7 10-4.1-1.4-7-5.4-7-10V6l7-3z" />
-                  </svg>
-                  <span>Seriös</span>
-                </button>
-                <button
-                  type="button"
-                  class="flex-1 inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm"
-                  [ngClass]="{
-                    'bg-fuchsia-500 text-slate-950': preset() === 'spielerisch',
-                    'text-slate-800 hover:bg-slate-300 dark:text-slate-100 dark:hover:bg-indigo-800/80': preset() !== 'spielerisch',
-                  }"
-                  (click)="setPreset('spielerisch', true)"
-                >
-                  <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M12 2l2.1 5.3L20 9.4l-4.5 3.7L16.8 19 12 15.8 7.2 19l1.3-5.9L4 9.4l5.9-2.1L12 2z" />
-                  </svg>
-                  <span>Spielerisch</span>
-                </button>
-              </div>
-            </div>
-          }
-        </header>
-
-        <main class="grid gap-4 lg:grid-cols-2">
-          <section
-            class="rounded-2xl border p-6 backdrop-blur"
-            [ngClass]="panelToneClass()"
-          >
-            <p class="mb-2 inline-flex items-center gap-1.5 text-sm text-slate-800 dark:text-slate-200">
-              <svg [ngClass]="[compactIconClass(), iconToneClass()]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l9-4 9 4-9 4-9-4zM7 10.5V14c0 1.7 2.7 3 5 3s5-1.3 5-3v-3.5" />
-              </svg>
+      <main class="home-main">
+        <mat-card appearance="raised" class="home-card home-card--create">
+          <mat-card-header>
+            <mat-card-subtitle>
+              <mat-icon class="home-card__icon">school</mat-icon>
               Lehrkraft
-            </p>
-            <h2 class="mb-6 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">Erstellen</h2>
-            <div class="mb-4 flex items-start justify-between gap-3">
-              <p class="text-sm text-slate-800 dark:text-slate-200">Neue Session für Kurs oder Q&amp;A in wenigen Klicks.</p>
+            </mat-card-subtitle>
+            <mat-card-title class="home-card__title">Erstellen</mat-card-title>
+          </mat-card-header>
+
+          <mat-card-content>
+            <div class="home-card__meta">
+              <p class="home-card__copy">Neue Session für Kurs oder Q&amp;A in wenigen Klicks.</p>
               <a
+                mat-stroked-button
                 href="https://github.com/arsnova-dev/arsnova-click-v3/blob/main/docs/onboarding.md"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition hover:bg-slate-200 dark:hover:bg-indigo-900/60"
-                [ngClass]="{
-                  'border-slate-400 text-slate-800 dark:border-indigo-300/40 dark:text-slate-100': preset() === 'serioes',
-                  'border-fuchsia-400/70 text-fuchsia-800 dark:border-fuchsia-300/60 dark:text-fuchsia-200': preset() === 'spielerisch',
-                }"
               >
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                  <circle cx="12" cy="12" r="9" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.5 9a2.5 2.5 0 1 1 4.2 1.8c-.8.7-1.7 1.3-1.7 2.2v.5M12 17h.01" />
-                </svg>
+                <mat-icon>help</mat-icon>
                 Hilfe
               </a>
             </div>
-            <a
-              routerLink="/quiz"
-              class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-base font-semibold text-slate-950 transition active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900"
-              [ngClass]="{
-                'bg-sky-500 hover:bg-sky-400 focus:ring-sky-400': preset() === 'serioes',
-                'bg-gradient-to-r from-fuchsia-400 via-amber-300 to-sky-300 hover:brightness-105 focus:ring-fuchsia-300 shadow-[0_10px_30px_-14px_rgba(217,70,239,1)]': preset() === 'spielerisch',
-              }"
-            >
-              @if (preset() === 'serioes') {
-                <svg class="h-4 w-4 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 3v5c0 4.6-2.9 8.6-7 10-4.1-1.4-7-5.4-7-10V6l7-3z" />
-                </svg>
-              } @else {
-                <svg class="h-6 w-6 text-fuchsia-900 drop-shadow-[0_0_10px_rgba(217,70,239,0.5)]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M12 2l2.4 6 6.2.5-4.7 4 1.5 6-5.4-3.5-5.4 3.5 1.5-6-4.7-4 6.2-.5L12 2z" />
-                </svg>
-              }
+          </mat-card-content>
+
+          <mat-card-actions class="l-stack l-stack--sm">
+            <a mat-flat-button routerLink="/quiz" class="home-cta">
+              <mat-icon class="home-cta__icon">add_circle</mat-icon>
               Session erstellen
             </a>
-            <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <a
-                routerLink="/quiz"
-                class="inline-flex min-h-11 items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium transition hover:bg-slate-200 dark:hover:bg-indigo-900/60"
-                [ngClass]="{
-                  'border-slate-400 text-slate-800 dark:border-indigo-300/40 dark:text-slate-100': preset() === 'serioes',
-                  'border-fuchsia-400/70 text-fuchsia-800 dark:border-fuchsia-300/60 dark:text-fuchsia-200': preset() === 'spielerisch',
-                }"
-              >
-                Quiz wählen
-              </a>
-              <a
-                routerLink="/quiz"
-                class="inline-flex min-h-11 items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium transition hover:bg-slate-200 dark:hover:bg-indigo-900/60"
-                [ngClass]="{
-                  'border-slate-400 text-slate-800 dark:border-indigo-300/40 dark:text-slate-100': preset() === 'serioes',
-                  'border-fuchsia-400/70 text-fuchsia-800 dark:border-fuchsia-300/60 dark:text-fuchsia-200': preset() === 'spielerisch',
-                }"
-              >
-                Q&amp;A
-              </a>
-            </div>
-          </section>
+            <a mat-stroked-button routerLink="/quiz" class="home-cta">
+              <mat-icon class="home-cta__icon">quiz</mat-icon>
+              Quiz wählen
+            </a>
+            <a mat-stroked-button routerLink="/quiz" class="home-cta">
+              <mat-icon class="home-cta__icon">question_answer</mat-icon>
+              Q&amp;A
+            </a>
+          </mat-card-actions>
+        </mat-card>
 
-          <section
-            id="student-entry"
-            class="rounded-2xl border p-6 backdrop-blur"
-            [ngClass]="panelToneClass()"
-          >
-            <p class="mb-2 inline-flex items-center gap-1.5 text-sm text-slate-800 dark:text-slate-200">
-              <svg [ngClass]="[compactIconClass(), iconToneClass()]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13A4 4 0 0 1 16 11" />
-              </svg>
+        <mat-card appearance="raised" id="student-entry" class="home-card">
+          <mat-card-header>
+            <mat-card-subtitle>
+              <mat-icon class="home-card__icon">group</mat-icon>
               Student/in
-            </p>
-            <h2 class="mb-4 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">Beitreten</h2>
-            <div class="mb-2 flex flex-wrap gap-2" aria-hidden="true">
-              @for (char of codeSlots(); track $index) {
-                <span class="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-400 bg-slate-100/95 text-xl font-semibold uppercase text-slate-900 dark:border-indigo-300/50 dark:bg-indigo-900/75 dark:text-slate-50 sm:h-12 sm:w-12 sm:text-2xl">
-                  {{ char || '·' }}
-                </span>
-              }
-            </div>
-            <p class="mb-3 text-sm text-slate-800 dark:text-slate-200">A–Z, 0–9 · 6 Zeichen</p>
-            <label for="session-code" class="sr-only">Session-Code</label>
-            <input
-              #sessionCodeInput
-              id="session-code"
-              type="text"
-              maxlength="6"
-              [value]="sessionCode()"
-              (input)="onSessionCodeInput($event)"
-              (keydown.enter)="joinSession()"
-              placeholder="A7K9P2"
-              class="mb-3 w-full rounded-xl border border-slate-400 bg-white px-4 py-3 text-center text-lg font-mono uppercase tracking-[0.25em] text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500 dark:border-indigo-300/50 dark:bg-indigo-950/75 dark:text-slate-50 sm:text-xl sm:tracking-[0.35em]"
-              aria-label="Session-Code eingeben"
-              autocapitalize="characters"
-              autocomplete="off"
-              spellcheck="false"
-            />
-            <button
-              type="button"
-              (click)="joinSession()"
-              [disabled]="!isValidSessionCode() || isJoining()"
-              class="inline-flex min-h-12 w-full items-center justify-center rounded-xl px-4 py-3 text-base font-semibold text-slate-950 transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900"
-              [ngClass]="{
-                'bg-sky-500 hover:bg-sky-400 focus:ring-sky-400': preset() === 'serioes',
-                'bg-gradient-to-r from-amber-300 via-fuchsia-300 to-sky-300 hover:brightness-105 focus:ring-fuchsia-300 shadow-[0_10px_30px_-14px_rgba(56,189,248,1)]': preset() === 'spielerisch',
-              }"
-              aria-label="Session beitreten"
-            >
-              @if (isJoining()) {
-                @if (preset() === 'serioes') {
-                  <svg class="h-4 w-4 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 3v5c0 4.6-2.9 8.6-7 10-4.1-1.4-7-5.4-7-10V6l7-3z" />
-                  </svg>
-                } @else {
-                  <svg class="h-6 w-6 animate-spin text-fuchsia-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <circle cx="12" cy="12" r="8" class="opacity-30" />
-                    <path stroke-linecap="round" d="M20 12a8 8 0 0 0-8-8" />
-                  </svg>
-                }
-                <span>Beitreten…</span>
-              } @else {
-                @if (preset() === 'serioes') {
-                  <svg class="h-4 w-4 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 3v5c0 4.6-2.9 8.6-7 10-4.1-1.4-7-5.4-7-10V6l7-3z" />
-                  </svg>
-                } @else {
-                  <svg class="h-6 w-6 text-fuchsia-900 drop-shadow-[0_0_10px_rgba(217,70,239,0.5)]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M12 2l1.9 4.7L19 8.4l-3.8 3.1L16.4 16 12 13.3 7.6 16l1.2-4.5L5 8.4l5.1-1.7L12 2z" />
-                  </svg>
-                }
-                <span>Beitreten</span>
-              }
-            </button>
-            @if (joinError()) {
-              <p class="mt-2 text-sm text-rose-600 dark:text-rose-400" role="alert">{{ joinError() }}</p>
-            }
-          </section>
-        </main>
+            </mat-card-subtitle>
+            <mat-card-title class="home-card__title">Beitreten</mat-card-title>
+          </mat-card-header>
 
-        <section class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <article
-            class="rounded-xl border p-4"
-            [ngClass]="subCardToneClass()"
-          >
-            <h3 class="inline-flex items-center gap-1.5 text-lg font-semibold">
-              <svg [ngClass]="[compactIconClass(), iconToneClass()]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h13a2 2 0 0 1 2 2v10H6a2 2 0 0 0-2 2V6zM6 18h13M6 6v12" />
-              </svg>
-              Bibliothek
-            </h3>
-            <p class="mt-1 text-sm text-slate-800 dark:text-slate-200">Lokal & Vorlagen</p>
-          </article>
-          <article
-            class="rounded-xl border p-4"
-            [ngClass]="subCardToneClass()"
-          >
-            <h3 class="inline-flex items-center gap-1.5 text-lg font-semibold">
-              <svg [ngClass]="[compactIconClass(), iconToneClass()]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                <circle cx="12" cy="12" r="2.5" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 0 1 8-8M20 12a8 8 0 0 0-8-8M4 12a8 8 0 0 0 8 8M20 12a8 8 0 0 1-8 8" />
-              </svg>
-              Live
-            </h3>
-            <p class="mt-1 text-sm text-slate-800 dark:text-slate-200">
-              @if (apiStatus()) {
-                Backend online
-              } @else {
-                Verbinde…
+          <mat-card-content class="l-stack l-stack--sm">
+            <div
+              class="home-code-slots"
+              [class.home-code-slots--valid]="isValidSessionCode()"
+              aria-hidden="true"
+            >
+              @for (char of codeSlots(); track $index) {
+                <span class="home-code-slot">{{ char || '·' }}</span>
               }
-            </p>
-          </article>
-          <article
-            class="rounded-xl border p-4"
-            [ngClass]="subCardToneClass()"
-          >
-            <h3 class="mb-2 inline-flex items-center gap-1.5 text-lg font-semibold">
-              <svg [ngClass]="[compactIconClass(), iconToneClass()]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                <rect x="3" y="4" width="18" height="6" rx="1.5" />
-                <rect x="3" y="14" width="18" height="6" rx="1.5" />
-                <path stroke-linecap="round" d="M7 7h.01M7 17h.01" />
-              </svg>
-              Status
-            </h3>
-            <app-server-status-widget />
-          </article>
-          <article
-            class="rounded-xl border p-4"
-            [ngClass]="subCardToneClass()"
-          >
-            <h3 class="inline-flex items-center gap-1.5 text-lg font-semibold">
-              <svg [ngClass]="[compactIconClass(), iconToneClass()]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13 3L4 14h7l-1 7 9-11h-7l1-7z" />
-              </svg>
-              Start
-            </h3>
-            <div class="mt-1 space-y-1 text-sm">
-              <a routerLink="/quiz" class="block text-sky-700 hover:text-sky-600 hover:underline dark:text-sky-300 dark:hover:text-sky-200">
-                @if (preset() === 'serioes') {
-                  <svg class="inline-block text-slate-700 dark:text-slate-200" [ngClass]="compactIconClass()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 3v5c0 4.6-2.9 8.6-7 10-4.1-1.4-7-5.4-7-10V6l7-3z" />
-                  </svg>
-                } @else {
-                  <svg class="inline-block text-fuchsia-700 dark:text-fuchsia-300 drop-shadow-[0_0_8px_rgba(217,70,239,0.55)]" [ngClass]="iconClass()" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M12 2l2.1 5.3L20 9.4l-4.5 3.7L16.8 19 12 15.8 7.2 19l1.3-5.9L4 9.4l5.9-2.1L12 2z" />
-                  </svg>
-                }
-                <span class="ml-1">Neues Quiz</span>
+            </div>
+            <p class="home-code-help">A–Z, 0–9 · 6 Zeichen</p>
+
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="home-code-field">
+              <mat-label>Session-Code</mat-label>
+              <input
+                #sessionCodeInput
+                matInput
+                maxlength="6"
+                [value]="sessionCode()"
+                (input)="onSessionCodeInput($event)"
+                (keydown.enter)="joinSession()"
+                placeholder="A7K9P2"
+                autocapitalize="characters"
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </mat-form-field>
+          </mat-card-content>
+
+          <mat-card-actions class="l-stack l-stack--sm">
+            @if (isJoining()) {
+              <button mat-flat-button class="home-cta" disabled aria-label="Session beitreten">
+                <mat-icon class="home-cta__icon home-spin">sync</mat-icon>
+                Beitreten…
+              </button>
+            } @else {
+              <button
+                mat-flat-button
+                class="home-cta"
+                (click)="joinSession()"
+                [disabled]="!isValidSessionCode()"
+                aria-label="Session beitreten"
+              >
+                <mat-icon class="home-cta__icon">login</mat-icon>
+                Beitreten
+              </button>
+            }
+            @if (joinError()) {
+              <p class="home-error" role="alert">{{ joinError() }}</p>
+            }
+          </mat-card-actions>
+        </mat-card>
+      </main>
+
+      <section class="home-grid">
+        <mat-card appearance="raised">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon class="home-card__icon">library_books</mat-icon>
+              Quiz-Bibliothek
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="home-subcard__links l-stack l-stack--xs">
+              <a mat-button routerLink="/quiz" class="home-subcard__link">
+                <mat-icon class="home-subcard__link-icon">menu_book</mat-icon>
+                Zur Bibliothek
               </a>
-              <a href="#student-entry" class="block text-sky-700 hover:text-sky-600 hover:underline dark:text-sky-300 dark:hover:text-sky-200">
-                @if (preset() === 'serioes') {
-                  <svg class="inline-block text-slate-700 dark:text-slate-200" [ngClass]="compactIconClass()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 3v5c0 4.6-2.9 8.6-7 10-4.1-1.4-7-5.4-7-10V6l7-3z" />
-                  </svg>
-                } @else {
-                  <svg class="inline-block text-fuchsia-700 dark:text-fuchsia-300 drop-shadow-[0_0_8px_rgba(217,70,239,0.55)]" [ngClass]="iconClass()" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M12 2l2.4 6 6.2.5-4.7 4 1.5 6-5.4-3.5-5.4 3.5 1.5-6-4.7-4 6.2-.5L12 2z" />
-                  </svg>
-                }
-                <span class="ml-1">Beitreten</span>
+              <a mat-button routerLink="/quiz" class="home-subcard__link">
+                <mat-icon class="home-subcard__link-icon">content_copy</mat-icon>
+                Quiz aus Vorlage erstellen
               </a>
             </div>
-          </article>
-        </section>
-      </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card appearance="raised" class="home-subcard--status">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon class="home-card__icon">sensors</mat-icon>
+              Status
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p class="home-subcard__body">
+              @if (apiStatus()) { Backend online } @else { Verbinde… }
+            </p>
+            <app-server-status-widget />
+          </mat-card-content>
+        </mat-card>
+      </section>
     </div>
   `,
+  styles: [`
+    .preset-toast {
+      position: fixed;
+      user-select: none;
+      right: 1rem;
+      bottom: 1rem;
+      z-index: 70;
+      width: min(92vw, 24rem);
+      border-radius: var(--mat-sys-corner-large);
+      border: 1px solid var(--mat-sys-outline-variant);
+      background: var(--mat-sys-surface-container);
+      padding: 0.75rem;
+      box-shadow: var(--mat-sys-level3);
+    }
+
+    .preset-toast__title {
+      margin: 0;
+      font: var(--mat-sys-title-small);
+    }
+
+    .preset-toast__subtitle,
+    .preset-toast__hint {
+      margin: 0.35rem 0 0;
+      font: var(--mat-sys-body-small);
+      color: var(--mat-sys-on-surface-variant);
+    }
+
+    .preset-toast__chips {
+      margin-top: 0.5rem;
+      pointer-events: none;
+    }
+
+    .home-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      margin-bottom: 1.25rem;
+      border-radius: var(--mat-sys-corner-extra-large);
+      border: 1px solid var(--mat-sys-outline-variant);
+      background: var(--mat-sys-surface-container);
+      padding: 1rem;
+      box-shadow: var(--mat-sys-level1);
+    }
+
+    .home-header__row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .home-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .home-brand__icon {
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: var(--mat-sys-corner-small);
+    }
+
+    .home-brand__title {
+      margin: 0;
+      font: var(--mat-sys-title-large);
+    }
+
+
+    .mobile-only { display: inline-flex; }
+    .desktop-only { display: none; }
+    @media (min-width: 768px) {
+      .mobile-only { display: none; }
+      .desktop-only { display: inline-flex; }
+    }
+
+    .home-controls {
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .home-icon-toggles {
+      border: none;
+      background: transparent;
+    }
+
+    .home-icon-toggles .mat-mdc-button-toggle {
+      border: none !important;
+      background: transparent;
+    }
+
+    .home-icon-toggles .mat-mdc-button-toggle:focus,
+    .home-icon-toggles .mat-mdc-button-toggle:focus-visible {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    .home-icon-toggles .mat-mdc-button-toggle-checked {
+      border: none !important;
+      background: var(--mat-sys-surface-container);
+    }
+
+    .home-icon-toggles .mat-mdc-button-toggle-checked .mat-icon {
+      color: var(--mat-sys-primary);
+    }
+
+    .home-icon-btn:focus,
+    .home-icon-btn:focus-visible {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    .home-icon-toggles--full {
+      width: 100%;
+    }
+
+    .home-icon-toggles--full .mat-mdc-button-toggle {
+      flex: 1;
+    }
+
+    .home-controls-mobile {
+      margin-top: 1rem;
+      border-top: 1px solid var(--mat-sys-outline-variant);
+      padding-top: 1rem;
+    }
+
+    .home-preset-toggle--full {
+      width: 100%;
+    }
+
+    .home-preset-toggle--full mat-button-toggle {
+      flex: 1;
+    }
+
+    .home-main {
+      display: grid;
+      gap: 1rem;
+    }
+
+    @media (min-width: 1024px) {
+      .home-main {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .home-card {
+      padding: 0.25rem;
+      box-shadow: var(--mat-sys-level4);
+    }
+
+    .home-card--create mat-card-content {
+      padding-top: 0;
+      padding-bottom: 0.5rem;
+    }
+
+    .home-card--create .home-card__meta {
+      gap: 0.5rem;
+    }
+
+    .home-card--create .home-card__copy {
+      margin: 0;
+    }
+
+    .home-card--create mat-card-actions {
+      padding-top: 0.5rem;
+    }
+
+    .home-card__icon {
+      vertical-align: middle;
+      margin-right: 0.25rem;
+      font-size: 1.125rem;
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+
+    .home-card__title {
+      font: var(--mat-sys-display-small);
+    }
+
+    .home-card__meta {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .home-card__meta a {
+      flex-shrink: 0;
+    }
+
+    .home-card__copy {
+      margin: 0;
+      font: var(--mat-sys-body-small);
+      color: var(--mat-sys-on-surface-variant);
+    }
+
+    mat-card-actions.l-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .home-cta {
+      width: 100%;
+    }
+
+    @media (min-width: 640px) {
+      mat-card-actions.l-stack {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .home-cta {
+        width: auto;
+        flex: 1 1 0;
+      }
+
+      .home-card--create mat-card-actions {
+        flex-direction: column;
+      }
+
+      .home-card--create mat-card-actions .home-cta {
+        width: 100%;
+        flex: none;
+      }
+    }
+
+    .home-code-slots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .home-code-slots--valid .home-code-slot {
+      border-color: var(--app-color-success-fg);
+      background: var(--app-color-success-bg);
+    }
+
+    .home-code-slot {
+      width: 2.75rem;
+      height: 2.75rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--mat-sys-corner-small);
+      border: 1px solid var(--mat-sys-outline);
+      background: var(--mat-sys-surface-container);
+      font-weight: 600;
+      font-size: 1.25rem;
+      text-transform: uppercase;
+    }
+
+    @media (min-width: 640px) {
+      .home-code-slot {
+        width: 3rem;
+        height: 3rem;
+        font-size: 1.5rem;
+      }
+    }
+
+    .home-code-help {
+      margin: 0.75rem 0 0;
+      font: var(--mat-sys-body-small);
+      color: var(--mat-sys-on-surface-variant);
+    }
+
+    .home-code-field {
+      width: 100%;
+      margin-top: 0.75rem;
+    }
+
+    .home-code-field input {
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    @media (min-width: 640px) {
+      .home-code-field input {
+        font-size: 1.2rem;
+        letter-spacing: 0.35em;
+      }
+    }
+
+    .home-error {
+      margin: 0;
+      color: var(--mat-sys-error);
+      font: var(--mat-sys-body-small);
+    }
+
+    .home-spin {
+      animation: home-spin 1s linear infinite;
+    }
+
+    @keyframes home-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .home-grid mat-card {
+      box-shadow: var(--mat-sys-level4);
+    }
+
+    .home-grid {
+      margin-top: 1rem;
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    @media (min-width: 640px) {
+      .home-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1280px) {
+      .home-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    .home-subcard__body {
+      margin: 0;
+      font: var(--mat-sys-body-small);
+      color: var(--mat-sys-on-surface-variant);
+    }
+
+    .home-subcard__links {
+      margin-top: 0.5rem;
+    }
+
+    .home-subcard__link {
+      justify-content: flex-start;
+    }
+
+    .home-subcard__link-icon {
+      margin-right: 0.35rem;
+    }
+
+    .home-subcard--status mat-card-content {
+      margin-top: 0.75rem;
+    }
+
+    .home-subcard--status .home-subcard__body {
+      margin-bottom: 0.5rem;
+    }
+
+    :host-context(html.preset-playful) {
+      .home-header {
+        background: linear-gradient(
+          135deg,
+          var(--mat-sys-surface-container),
+          var(--mat-sys-tertiary-container)
+        );
+        border-color: var(--mat-sys-primary);
+        box-shadow: var(--app-shadow-accent);
+      }
+
+      .home-brand__icon {
+        border-radius: 50%;
+      }
+
+      .home-code-slot {
+        border-radius: 50%;
+      }
+
+      .home-card__icon,
+      .home-preset-icon--playful,
+      .home-subcard__link-icon {
+        color: var(--mat-sys-primary);
+      }
+
+      a[mat-stroked-button] .home-cta__icon {
+        color: var(--mat-sys-primary);
+      }
+
+      .home-preset-icon--playful {
+        font-size: 1.25rem;
+        width: 1.25rem;
+        height: 1.25rem;
+      }
+
+      .home-card__icon {
+        transform: scale(1.15);
+      }
+
+      .preset-toast {
+        border-radius: 1.5rem;
+        border-color: var(--mat-sys-primary);
+      }
+    }
+  `],
 })
 export class HomeComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   @ViewChild('homeHeader') private readonly homeHeader?: ElementRef<HTMLElement>;
   @ViewChild('controlsToggleBtn') private readonly controlsToggleBtn?: ElementRef<HTMLButtonElement>;
-  @ViewChild('mobileThemeSelect') private readonly mobileThemeSelect?: ElementRef<HTMLSelectElement>;
   @ViewChild('sessionCodeInput') private readonly sessionCodeInput?: ElementRef<HTMLInputElement>;
 
   apiStatus = signal<string | null>(null);
@@ -450,83 +731,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   isJoining = signal(false);
 
   theme = signal<'system' | 'dark' | 'light'>('system');
-  resolvedTheme = signal<'dark' | 'light'>('dark');
   language = signal<'de' | 'en'>('de');
-  preset = signal<'serioes' | 'spielerisch'>('serioes');
+  preset = signal<'serious' | 'spielerisch'>('serious');
   controlsMenuOpen = signal(false);
   presetToastVisible = signal(false);
   presetToastTitle = signal('');
   presetToastOn = signal<string[]>([]);
   presetToastOff = signal<string[]>([]);
   presetToastHint = signal('');
-  isDarkTheme = computed(() => this.resolvedTheme() === 'dark');
-  isPlayful = computed(() => this.preset() === 'spielerisch');
-  iconClass = computed(() => (this.isPlayful() ? 'h-6 w-6' : 'h-4 w-4'));
-  compactIconClass = computed(() => (this.isPlayful() ? 'h-5 w-5' : 'h-4 w-4'));
-  iconToneClass = computed(() =>
-    this.isPlayful() ? 'text-fuchsia-700 dark:text-fuchsia-300 drop-shadow-[0_0_8px_rgba(217,70,239,0.55)]' : 'text-slate-700 dark:text-slate-200'
-  );
-  uiMode = computed(() => `${this.isDarkTheme() ? 'dark' : 'light'}-${this.preset()}`);
-  rootToneClass = computed(() => {
-    switch (this.uiMode()) {
-      case 'light-serioes':
-        return 'bg-slate-100';
-      case 'dark-serioes':
-        return 'bg-indigo-950';
-      case 'light-spielerisch':
-        return 'bg-gradient-to-br from-fuchsia-100 via-violet-100 to-sky-100';
-      default:
-        return 'bg-gradient-to-br from-fuchsia-950 via-violet-900 to-sky-900';
-    }
-  });
-  headerToneClass = computed(() => {
-    switch (this.uiMode()) {
-      case 'light-serioes':
-        return 'border-slate-300 bg-white';
-      case 'dark-serioes':
-        return 'border-indigo-300/40 bg-indigo-900/70';
-      case 'light-spielerisch':
-        return 'border-fuchsia-300 bg-white shadow-[0_0_24px_-20px_rgba(217,70,239,0.55)]';
-      default:
-        return 'border-fuchsia-300/50 bg-violet-950/70 shadow-[0_0_36px_-22px_rgba(217,70,239,0.8)]';
-    }
-  });
-  panelToneClass = computed(() => {
-    switch (this.uiMode()) {
-      case 'light-serioes':
-        return 'border-slate-300 bg-white';
-      case 'dark-serioes':
-        return 'border-indigo-300/40 bg-indigo-900/70';
-      case 'light-spielerisch':
-        return 'border-fuchsia-300 bg-white';
-      default:
-        return 'border-fuchsia-300/50 bg-violet-950/70';
-    }
-  });
-  subCardToneClass = computed(() => {
-    switch (this.uiMode()) {
-      case 'light-serioes':
-        return 'border-slate-300 bg-white';
-      case 'dark-serioes':
-        return 'border-indigo-300/35 bg-indigo-900/65';
-      case 'light-spielerisch':
-        return 'border-fuchsia-300 bg-white';
-      default:
-        return 'border-fuchsia-300/45 bg-violet-950/65';
-    }
-  });
-  controlToneClass = computed(() => {
-    switch (this.uiMode()) {
-      case 'light-serioes':
-        return 'border-slate-300 bg-white';
-      case 'dark-serioes':
-        return 'border-indigo-300/45 bg-indigo-900/70';
-      case 'light-spielerisch':
-        return 'border-fuchsia-300 bg-white';
-      default:
-        return 'border-fuchsia-300/45 bg-violet-950/70';
-    }
-  });
   private presetToastTimer: ReturnType<typeof setTimeout> | null = null;
 
   isValidSessionCode = computed(() => /^[A-Z0-9]{6}$/.test(this.sessionCode()));
@@ -541,6 +753,15 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.theme.set(storedTheme);
     }
     this.applyTheme();
+
+    const storedPreset = localStorage.getItem('home-preset');
+    const preset = storedPreset === 'serioes' ? 'serious' : storedPreset; // Migration: serioes → serious
+    if (preset === 'serious' || preset === 'spielerisch') {
+      this.preset.set(preset);
+      this.applyPreset();
+      if (preset !== storedPreset) localStorage.setItem('home-preset', preset);
+    }
+
     try {
       const health = await trpc.health.check.query();
       this.apiStatus.set(health.status);
@@ -564,20 +785,18 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.closeControlsMenu();
   }
 
-  setPreset(nextPreset: 'serioes' | 'spielerisch', closeMenu = false): void {
+  setPreset(nextPreset: 'serious' | 'spielerisch', closeMenu = false): void {
     if (this.preset() !== nextPreset) {
       this.preset.set(nextPreset);
+      localStorage.setItem('home-preset', nextPreset);
+      this.applyPreset();
       this.showPresetToast(nextPreset);
     }
     if (closeMenu) this.closeControlsMenu();
   }
 
   toggleControlsMenu(): void {
-    const nextOpen = !this.controlsMenuOpen();
-    this.controlsMenuOpen.set(nextOpen);
-    if (nextOpen) {
-      setTimeout(() => this.mobileThemeSelect?.nativeElement.focus(), 0);
-    }
+    this.controlsMenuOpen.set(!this.controlsMenuOpen());
   }
 
   closeControlsMenu(restoreFocus = false): void {
@@ -585,29 +804,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (restoreFocus) {
       setTimeout(() => this.controlsToggleBtn?.nativeElement.focus(), 0);
     }
-  }
-
-  private showPresetToast(preset: 'serioes' | 'spielerisch'): void {
-    if (this.presetToastTimer) {
-      clearTimeout(this.presetToastTimer);
-      this.presetToastTimer = null;
-    }
-    if (preset === 'serioes') {
-      this.presetToastTitle.set('Preset: Seriös');
-      this.presetToastOn.set(['Anonym']);
-      this.presetToastOff.set(['Leaderboard', 'Sound', 'Belohnung', 'Motivation', 'Emoji']);
-      this.presetToastHint.set('Antwortphase offen (kein Standard-Timer).');
-    } else {
-      this.presetToastTitle.set('Preset: Spielerisch');
-      this.presetToastOn.set(['Leaderboard', 'Sound', 'Belohnung', 'Motivation', 'Emoji']);
-      this.presetToastOff.set(['Anonym']);
-      this.presetToastHint.set('');
-    }
-    this.presetToastVisible.set(true);
-    this.presetToastTimer = setTimeout(() => {
-      this.presetToastVisible.set(false);
-      this.presetToastTimer = null;
-    }, 7000);
   }
 
   @HostListener('document:keydown.escape')
@@ -654,10 +850,40 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private applyTheme(): void {
     const root = document.documentElement;
+    root.classList.remove('dark', 'light');
     const selected = this.theme();
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const useDark = selected === 'dark' || (selected === 'system' && prefersDark);
-    this.resolvedTheme.set(useDark ? 'dark' : 'light');
-    root.classList.toggle('dark', useDark);
+    if (selected === 'dark') {
+      root.classList.add('dark');
+    } else if (selected === 'light') {
+      root.classList.add('light');
+    }
+  }
+
+  private applyPreset(): void {
+    const root = document.documentElement;
+    root.classList.toggle('preset-playful', this.preset() === 'spielerisch');
+  }
+
+  private showPresetToast(preset: 'serious' | 'spielerisch'): void {
+    if (this.presetToastTimer) {
+      clearTimeout(this.presetToastTimer);
+      this.presetToastTimer = null;
+    }
+    if (preset === 'serious') {
+      this.presetToastTitle.set('Preset: Seriös');
+      this.presetToastOn.set(['Anonym']);
+      this.presetToastOff.set(['Leaderboard', 'Sound', 'Belohnung', 'Motivation', 'Emoji']);
+      this.presetToastHint.set('Antwortphase offen (kein Standard-Timer).');
+    } else {
+      this.presetToastTitle.set('Preset: Spielerisch');
+      this.presetToastOn.set(['Leaderboard', 'Sound', 'Belohnung', 'Motivation', 'Emoji']);
+      this.presetToastOff.set(['Anonym']);
+      this.presetToastHint.set('');
+    }
+    this.presetToastVisible.set(true);
+    this.presetToastTimer = setTimeout(() => {
+      this.presetToastVisible.set(false);
+      this.presetToastTimer = null;
+    }, 7000);
   }
 }

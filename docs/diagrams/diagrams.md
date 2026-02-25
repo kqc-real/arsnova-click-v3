@@ -98,7 +98,7 @@ graph TB
 
 ## 2. Frontend-Architektur (Komponenten)
 
-Angular 19 · Standalone Components · Signals · Tailwind CSS
+Angular 19 · Standalone Components · Signals · Angular Material 3 + SCSS-Patterns
 
 ```mermaid
 graph TB

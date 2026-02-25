@@ -1,0 +1,223 @@
+@use '@angular/material' as mat;
+
+// ---------------------------------------------------------------------------
+// 1) Theme Foundation – ADR 0005, Regel 1
+//    mat.theme() erzeugt alle --mat-sys-* CSS Custom Properties.
+//    Farben nutzen light-dark() – gesteuert über color-scheme.
+// ---------------------------------------------------------------------------
+
+// Serious preset (default) – light-dark via color-scheme
+html {
+  color-scheme: light dark;
+
+  @include mat.strong-focus-indicators();
+
+  @include mat.theme((
+    color: (
+      primary: mat.$azure-palette,
+      tertiary: mat.$cyan-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+}
+
+// Explicit overrides for manual theme switching
+html.dark  { color-scheme: dark; }
+html.light { color-scheme: light; }
+
+// Playful preset – overrides palette, typography, shapes; keeps light-dark mechanism
+html.preset-playful {
+  font-family: 'Nunito', sans-serif;
+
+  @include mat.theme((
+    color: (
+      primary: mat.$magenta-palette,
+      tertiary: mat.$violet-palette,
+    ),
+    typography: (
+      brand-family: 'Nunito',
+      plain-family: 'Nunito',
+    ),
+  ));
+
+  @include mat.button-overrides((
+    filled-container-shape: 9999px,
+    outlined-container-shape: 9999px,
+    text-container-shape: 9999px,
+  ));
+
+  @include mat.card-overrides((
+    outlined-container-shape: 1.5rem,
+    elevated-container-shape: 1.5rem,
+  ));
+}
+
+// ---------------------------------------------------------------------------
+// 1b) Component Overrides – ADR 0005, Regel 2 (offizielle Override-APIs)
+// ---------------------------------------------------------------------------
+
+html {
+  @include mat.card-overrides((
+    outlined-container-shape: var(--mat-sys-corner-extra-large),
+  ));
+}
+
+// ---------------------------------------------------------------------------
+// 2) App-Semantic Tokens – TOKENS.md §2
+// ---------------------------------------------------------------------------
+
+:root {
+  --app-color-success-bg: var(--mat-sys-secondary-container);
+  --app-color-success-fg: var(--mat-sys-on-secondary-container);
+  --app-color-danger-bg: var(--mat-sys-error-container);
+  --app-color-danger-fg: var(--mat-sys-on-error-container);
+  --app-color-info-bg: var(--mat-sys-tertiary-container);
+  --app-color-info-fg: var(--mat-sys-on-tertiary-container);
+  --app-color-warning-bg: var(--mat-sys-surface-variant);
+  --app-color-warning-fg: var(--mat-sys-on-surface-variant);
+
+  --app-bg-root: var(--mat-sys-surface);
+  --app-shadow-accent: none;
+}
+
+html.preset-playful {
+  --app-bg-root: linear-gradient(
+    145deg,
+    var(--mat-sys-surface-container-lowest) 0%,
+    var(--mat-sys-surface-container-low) 20%,
+    var(--mat-sys-tertiary-container) 45%,
+    var(--mat-sys-surface-container-low) 70%,
+    var(--mat-sys-surface-container) 100%
+  );
+  --app-shadow-accent: 0 12px 40px -12px var(--mat-sys-primary);
+  --app-corner-playful: 1.5rem;
+
+  .app-footer {
+    background: linear-gradient(
+      180deg,
+      var(--mat-sys-surface-container-low),
+      var(--mat-sys-tertiary-container)
+    );
+  }
+
+  .app-footer__icon {
+    color: var(--mat-sys-primary);
+  }
+
+  .server-status__icon {
+    color: var(--mat-sys-primary);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 3) Global Reset & Base Styles
+// ---------------------------------------------------------------------------
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font: var(--mat-sys-body-medium);
+  background: var(--app-bg-root);
+  color: var(--mat-sys-on-surface);
+}
+
+// prefers-reduced-motion – Backlog DoD, Story 6.5
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 4) Layout Patterns – ADR 0005, Regel 4
+// ---------------------------------------------------------------------------
+
+.l-stack {
+  display: flex;
+  flex-direction: column;
+
+  &--xs  { gap: 0.25rem; }
+  &--sm  { gap: 0.5rem; }
+  &--md  { gap: 1rem; }
+  &--lg  { gap: 1.5rem; }
+  &--xl  { gap: 2rem; }
+}
+
+.l-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  &--xs  { gap: 0.25rem; }
+  &--sm  { gap: 0.5rem; }
+  &--md  { gap: 1rem; }
+  &--lg  { gap: 1.5rem; }
+}
+
+.l-grid {
+  display: grid;
+
+  &--sm  { gap: 0.5rem; }
+  &--md  { gap: 0.75rem; }
+  &--lg  { gap: 1rem; }
+
+  &--2col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  &--4col { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  @media (max-width: 639px)  { &--2col, &--4col { grid-template-columns: 1fr; } }
+  @media (min-width: 640px)  { &--auto-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1280px) { &--auto-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+}
+
+.l-inset {
+  &--xs  { padding: 0.25rem; }
+  &--sm  { padding: 0.5rem; }
+  &--md  { padding: 1rem; }
+  &--lg  { padding: 1.5rem; }
+  &--xl  { padding: 2rem; }
+}
+
+.l-page {
+  max-width: 56rem;
+  margin-inline: auto;
+  padding: 1.5rem 1rem;
+
+  @media (min-width: 640px) { padding-inline: 1.5rem; }
+  @media (min-width: 1024px) { padding-inline: 2rem; }
+}
+
+.l-section {
+  max-width: 42rem;
+  margin-inline: auto;
+}
+
+// ---------------------------------------------------------------------------
+// 5) Utility: Screen-reader only
+// ---------------------------------------------------------------------------
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

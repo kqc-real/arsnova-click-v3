@@ -9,7 +9,7 @@
 
 ### 🔄 Turn 2: Der Frontend-Entwurf (Und der Fehler)
 **Student (Prompt):**
-> "Perfekt! Jetzt das Angular Frontend. Erstelle die `QuizViewComponent`. Lade die Daten via tRPC und zeige sie in einer Tailwind-Card."
+> "Perfekt! Jetzt das Angular Frontend. Erstelle die `QuizViewComponent`. Lade die Daten via tRPC und zeige sie in einer Angular-Material-Card mit tokenbasiertem Styling."
 
 **KI (Antwort):**
 > *Generiert die Komponente, macht aber einen Fehler:*

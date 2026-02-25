@@ -15,7 +15,7 @@ Dieses Dokument ist die **kanonische Referenz** für Struktur, Stack, Konvention
 ## 2. Repository-Struktur (Pfade)
 
 - **Backend:** `apps/backend/` – Node.js, Express, tRPC v11, Prisma 7, Redis.
-- **Frontend:** `apps/frontend/` – Angular 17+ (aktuell 19), Standalone Components, Signals, Tailwind CSS.
+- **Frontend:** `apps/frontend/` – Angular 17+ (aktuell 19), Standalone Components, Signals, Angular Material 3.
 - **Shared Types:** `libs/shared-types/` – Zod-Schemas, TypeScript-Typen, DTO-Definitionen. Import: `@arsnova/shared-types`.
 - **Prisma:** `prisma/schema.prisma` – Datenmodell; Migrationen und Client-Generierung wie üblich.
 - **Dokumentation:** `docs/` – architecture, diagrams, onboarding, vibe-coding; `Backlog.md` im Repo-Root.
@@ -29,7 +29,7 @@ Dieses Dokument ist die **kanonische Referenz** für Struktur, Stack, Konvention
 - **Echtzeit:** Redis Pub/Sub; tRPC-WebSocket für Subscriptions.
 - **Quiz-Inhalte (Local-First):** Yjs (CRDTs), IndexedDB, y-websocket für Multi-Device-Sync.
 - **Frontend-State:** Nur Angular Signals (`signal`, `computed`, `effect`). Kein RxJS für UI-State (kein BehaviorSubject); RxJS nur für asynchrone Streams (z. B. tRPC-Subscriptions, Debouncing).
-- **UI:** Standalone Components, Control Flow `@if`/`@for`, Tailwind-Klassen im Template. Keine NgModules, keine komplexen SCSS-Dateien.
+- **UI:** Standalone Components, Control Flow `@if`/`@for`, Angular Material 3, tokenbasiertes Theming und SCSS-Patterns. Keine NgModules, kein Tailwind.
 
 ---
 

@@ -107,7 +107,7 @@ Eine Story gilt als **fertig**, wenn **alle** folgenden Kriterien erfüllt sind:
 - Mobile-First: Layout funktioniert ab 320 px Viewport-Breite ohne horizontales Scrollen.
 - Touch-Targets ≥ 44 × 44 px (WCAG 2.5.5).
 - Alle interaktiven Elemente per Tastatur erreichbar (`Tab`, `Enter`/`Space`), sichtbarer Fokusring.
-- Dark- und Light-Theme korrekt (Tailwind `dark:`-Varianten, Kontrast ≥ 4.5:1 WCAG AA).
+- Dark- und Light-Theme korrekt (Material Design 3 Theme-Tokens, Kontrast ≥ 4.5:1 WCAG AA).
 - `prefers-reduced-motion` wird respektiert (Animationen deaktiviert/reduziert).
 - Kein neuer Lighthouse-Accessibility-Score-Rückgang unter 90.
 
@@ -660,7 +660,7 @@ Eine Story gilt als **fertig**, wenn **alle** folgenden Kriterien erfüllt sind:
     - **System** (default) übernimmt die Betriebssystem-Einstellung via `prefers-color-scheme` Media-Query.
     - Theme-Wechsel erfolgt sofort ohne Seitenreload (CSS-Klasse `dark` auf `<html>`).
     - Die Auswahl wird im `localStorage` persistiert und beim nächsten Besuch wiederhergestellt.
-    - Alle Tailwind-Komponenten nutzen `dark:`-Varianten für Farben, Hintergründe und Kontraste.
+    - Alle UI-Komponenten nutzen Material Design 3 Theme-Tokens für Farben, Hintergründe und Kontraste (ADR 0005).
     - Countdown, Leaderboard, Lobby und Beamer-Ansicht unterstützen beide Themes.
     - Kontrastverhältnisse erfüllen WCAG 2.1 AA (mind. 4.5:1 für Text).
 - **Story 6.2 (Internationalisierung):** 🟡 Als Nutzer möchte ich die App in meiner Sprache verwenden können, damit ich alle Bedienelemente und Hinweise verstehe.
@@ -685,7 +685,7 @@ Eine Story gilt als **fertig**, wenn **alle** folgenden Kriterien erfüllt sind:
 - **Story 6.4 (Mobile-First & Responsive Design):** 🔴 Als Student möchte ich die App auf meinem Smartphone komfortabel bedienen können, da ich im Hörsaal primär mein Handy nutze.
   - **Akzeptanzkriterien:**
     - Alle Ansichten werden **Mobile-First** entwickelt: Basis-Layout für Smartphones (≤ 640px), erweitert für Tablets (≥ 768px) und Desktop/Beamer (≥ 1024px).
-    - Tailwind-Breakpoints (`sm`, `md`, `lg`, `xl`) werden konsequent genutzt — keine festen Pixelbreiten.
+    - Responsive Breakpoints (640px, 768px, 1024px, 1280px) werden konsequent genutzt — keine festen Pixelbreiten.
     - Touch-Targets (Buttons, Antwortoptionen) sind mindestens 44×44px groß (Apple HIG / WCAG 2.5.5).
     - Abstimmungsbuttons sind auf Smartphones als vollbreite, gestapelte Karten dargestellt (einfaches Antippen).
     - Beamer-Ansicht des Dozenten nutzt die volle Breite (`lg`+) mit großer Schrift, Countdown und Leaderboard.
