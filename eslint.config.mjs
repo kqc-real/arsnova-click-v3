@@ -6,6 +6,7 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    files: ['**/*.ts', '**/*.mts'],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -13,20 +14,16 @@ export default tseslint.config(
       },
     },
     rules: {
-      // Kein `any` erlaubt (AGENT.md §3)
       '@typescript-eslint/no-explicit-any': 'error',
-
-      // Ungenutzte Variablen (mit Ausnahme für _-Prefix)
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
-
-      // Konsistenz
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'prefer-const': 'error',
       'no-var': 'error',
       eqeqeq: ['error', 'always'],
+      'no-irregular-whitespace': 'off',
     },
   },
   {
@@ -36,6 +33,8 @@ export default tseslint.config(
       '**/.angular/**',
       '**/.astro/**',
       '**/coverage/**',
+      '**/scripts/**',
+      '**/*.config.mjs',
     ],
   },
 );
