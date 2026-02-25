@@ -39,6 +39,16 @@ Wenn der Server **nicht** aus **`dist/browser`** bedient wird, liefert die SPA b
 | **Bundle-Budgets** | `angular.json`: initial max. 500 kB (Warning), 1 MB (Error). |
 | **Service Worker** | PWA/ngsw für Production – Caching bei wiederholten Besuchen. |
 
+## DoD-Checks: 320px & Accessibility
+
+- **Kein horizontales Scrollen ab 320px (Story 6.4):**  
+  Nach dem Build: `npx serve dist/browser -s` starten, dann `npm run check:viewport` (erwartet `BASE_URL`, Default `http://localhost:3000`). Prüft 320px-Viewport für `/`, `/legal/imprint`, `/legal/privacy`, `/quiz`, `/session/DEMO01`.
+
+- **Lighthouse Accessibility ≥ 90 (DoD):**  
+  `npm run lighthouse:a11y` – startet bei Bedarf einen lokalen Serve und gibt den Accessibility-Score aus. Optional: `LIGHTHOUSE_URL=http://localhost:3000 npm run lighthouse:a11y`, wenn bereits ein Serve läuft.
+
+---
+
 ## Weitere Tipps bei Bedarf
 
 - **Bundle analysieren:** `cd apps/frontend && npm run build -- --configuration=production --stats-json`, dann mit [source-map-explorer](https://www.npmjs.com/package/source-map-explorer) oder [webpack-bundle-analyzer](https://www.npmjs.com/package/webpack-bundle-analyzer) die größten Pakete prüfen (z. B. Angular Material, tRPC).

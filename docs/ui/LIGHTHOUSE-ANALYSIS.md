@@ -12,6 +12,7 @@
 | **Performance** | 85 %   |
 | **Best Practices** | 96 % |
 | **SEO**          | 91 %   |
+| **Accessibility** | 100 % (DoD ≥ 90) |
 
 ---
 
@@ -75,6 +76,14 @@ Während des Lighthouse-Laufs werden **WebSocket-Verbindungen zu `ws://localhost
 ## Umgesetzte Anpassungen (aus diesem Lauf)
 
 1. **robots.txt** – Datei `apps/frontend/src/robots.txt` mit `User-agent: *`, `Allow: /` und optionalem Sitemap-Hinweis; Asset-Konfiguration in `angular.json`, sodass die Datei als `robots.txt` im Root des Build-Outputs (`dist/browser/`) liegt.
+
+---
+
+## 4. Accessibility (100 % – Backlog DoD ≥ 90)
+
+- **Prüfung:** `cd apps/frontend && npm run lighthouse:a11y` (nutzt `LIGHTHOUSE_URL` oder startet eigenen Serve aus `dist/browser`).
+- **Ergebnis (2026-02-25):** Accessibility-Score **100 %** – DoD-Anforderung „kein Rückgang unter 90“ erfüllt.
+- **Wiederholung:** Vor relevanten UI-Änderungen oder vor Release erneut ausführen.
 
 ---
 

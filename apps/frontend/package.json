@@ -9,6 +9,8 @@
     "build:prod": "ng build --configuration=production",
     "serve:dist": "npx serve dist/browser -s",
     "lighthouse:serve": "npm run build:prod && npm run serve:dist",
+    "check:viewport": "node scripts/check-viewport-320.mjs",
+    "lighthouse:a11y": "node scripts/lighthouse-a11y.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "screenshots": "node scripts/capture-screenshots.mjs"
   },

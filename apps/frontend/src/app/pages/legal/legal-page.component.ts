@@ -29,6 +29,21 @@ import { Subject, takeUntil } from 'rxjs';
   styles: [`
     .legal-page {
       padding-bottom: 3rem;
+      padding-inline: 1.5rem;
+      min-width: 0;
+      overflow-x: clip;
+    }
+
+    @media (min-width: 600px) {
+      .legal-page {
+        padding-inline: 2rem;
+      }
+    }
+
+    @media (min-width: 840px) {
+      .legal-page {
+        padding-inline: 2.5rem;
+      }
     }
 
     .legal-back {
@@ -49,8 +64,10 @@ import { Subject, takeUntil } from 'rxjs';
       font: var(--mat-sys-body-large);
       color: var(--mat-sys-on-surface);
       line-height: 1.7;
-      max-inline-size: 65ch;
+      max-inline-size: min(65ch, 100%);
       margin-inline: auto;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
 
     .legal-article :deep(h1) {

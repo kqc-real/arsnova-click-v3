@@ -8,6 +8,7 @@ node_modules/
 # ---------- Build output ----------
 dist/
 **/lighthouse-report.json
+**/lighthouse-a11y-report.json
 .astro/
 out-tsc/
 tmp/

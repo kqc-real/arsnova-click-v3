@@ -111,6 +111,7 @@ Jede Ausnahme muss dokumentiert sein (Scope, Dauer, Rueckbauplan).
 |-------|-------|-------------|--------------|
 | `apps/landing` (Astro) nutzt Tailwind | Offen | Separate Codebase, Marketing-Landing, kein Angular. Kein Konflikt mit `apps/frontend` Material-Theme. | Bei Bedarf auf eigenes Designsystem oder statische Styles umstellen. |
 | `index.html` meta `theme-color` mit Hex-Werten | Dauerhaft | HTML meta-Attribute unterstuetzen keine CSS-Variablen. Browser-Limitation. | Kein Rueckbau moeglich; Werte (#f5f5f5 / #1c1b1f) orientieren sich an M3 Surface-Farben. |
+| Home: `.mat-button-toggle` Selektoren fuer transparente Theme/Preset-Toggles | Bis Override-API | Offizielle `mat.button-toggle-overrides()` decken transparenten Look (Playful/Dark) nicht zuverlaessig ab. Farben bleiben tokenbasiert. | Sobald Material-Override-API transparente Toggle-Gruppen unterstuetzt, auf Overrides umstellen und Selektoren entfernen. |
 
 ## Verwandte Dokumente
 - `docs/architecture/decisions/0002-use-angular-signals-for-ui-state.md`
