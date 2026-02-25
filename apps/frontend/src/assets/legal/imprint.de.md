@@ -1,6 +1,6 @@
 # Impressum
 
-Angaben gemäß § 5 Telemediengesetz (TMG)
+Angaben gemäß § 5 Telemediengesetz (TMG) bzw. § 5 Digitale-Dienste-Gesetz (DDG)
 
 ## Anbieter / Diensteanbieter
 
@@ -15,7 +15,7 @@ Deutschland
 E-Mail: [klaus.quibeldey-cirkel@iu.org](mailto:klaus.quibeldey-cirkel@iu.org)  
 Web: [https://www.iu-dualesstudium.de](https://www.iu-dualesstudium.de)
 
-## Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV
+## Verantwortlich für den Inhalt (§ 18 Abs. 2 MStV)
 
 Prof. Dr. Klaus Quibeldey-Cirkel, Juri-Gagarin-Ring 152, 99084 Erfurt
 

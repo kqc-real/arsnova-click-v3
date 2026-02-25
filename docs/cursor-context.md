@@ -141,6 +141,7 @@ Priorisierung: 🔴 Must, 🟡 Should, 🟢 Could. Abhängigkeiten: Epic 0 → 1
 ## 13. Wichtige Dateien für Kontext
 
 - **Backlog:** Backlog.md (Repo-Root) – vor Story-Start prüfen.
+- **Mitwirken / Handover:** CONTRIBUTING.md – Einstieg für Studis (Setup, Story-Wahl, DoD vor PR, Branch/PR); bei Fragen zu Workflow oder „wie starte ich?“ darauf verweisen.
 - **Schema:** prisma/schema.prisma; libs/shared-types/src/schemas.ts (Zod, DTOs).
 - **Router:** apps/backend/src/routers/index.ts, apps/backend/src/routers/*.ts.
 - **Diagramme:** docs/diagrams/diagrams.md (detailliert), docs/diagrams/architecture-overview.md (Übersicht).

@@ -18,5 +18,6 @@ Du bist der Lead-Architekt. Wir arbeiten in einem **npm Workspaces Monorepo**.
 - **Data:** Redis für Realtime-Sync, Yjs für Quiz-Inhalte.
 
 ## 📋 Arbeitsweise in Cursor
-- Nutze `@Codebase`, um das **Backlog** (`Backlog.md` im Repo-Root) zu prüfen, bevor du eine Story startest.
+- **AGENT.md** gilt als ergänzende KI-Leitplanken: Baby-Steps, Backend-oder-Frontend zuerst, kein `BehaviorSubject` für UI-State, Styling (Material 3, kein Tailwind), Integrationstest vor Story-Fertigstellung. Bei Unklarheiten oder fehlendem Kontext: User bitten, `@AGENT.md` zu laden.
+- Nutze `@Codebase` bzw. das **Backlog** (`Backlog.md` im Repo-Root), um vor Story-Start die Akzeptanzkriterien und DoD zu prüfen.
 - Wenn du im **Composer (`Cmd+I`)** arbeitest, stelle sicher, dass du Änderungen in `apps/backend` und `apps/frontend` gleichzeitig vornimmst, um die tRPC-Typsicherheit zu wahren.

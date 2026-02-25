@@ -19,7 +19,7 @@ Der absolute USP (Unique Selling Proposition) dieses Systems ist die **"Zero-Kno
 
 Wir setzen auf einen stark typisierten, hochmodernen Full-Stack:
 
-* **Frontend:** Angular (Standalone Components, Signals, Tailwind CSS)
+* **Frontend:** Angular (Standalone Components, Signals, Angular Material 3)
 * **Backend:** Node.js API mit tRPC (End-to-End Typsicherheit & WebSockets)
 * **Datenbank:** PostgreSQL via Prisma ORM
 * **Echtzeit-Broker:** Redis (Pub/Sub)
@@ -95,6 +95,8 @@ Dieses Projekt wird im "Vibe Coding"-Modus entwickelt. Du agierst als Architekt,
 
 **WICHTIG:** Lade zu Beginn deiner Programmier-Session immer die Datei `AGENT.md` in den Kontext deiner KI, damit diese sich an die strengen Architektur- und Sicherheitsregeln (z.B. das Data-Stripping von Lösungen) hält. Für **umfassenden Projekt-Kontext** (Struktur, Stack, Backlog, DoD, ~4k Tokens) und optional **Context Caching** (Claude Opus 4.6): `@docs/cursor-context.md` in die erste Nachricht einbinden. Die Cursor-Regel unter `.cursor/rules/core.mdc` verweist darauf automatisch.
 
+**Übergabe an Studis:** Siehe [CONTRIBUTING.md](./CONTRIBUTING.md) – Onboarding, Story-Wahl, DoD-Check vor PR, Branch/PR-Konventionen.
+
 ## 📚 Dokumentation
 
 Wir leben **"Documentation as Code"**. Bevor du große Features implementierst, lies das [Architektur-Handbuch](./docs/architecture/handbook.md). Jede architektonische Entscheidung muss als ADR im Ordner `docs/architecture/decisions/` dokumentiert werden.
@@ -103,13 +105,14 @@ Wir leben **"Documentation as Code"**. Bevor du große Features implementierst, 
 
 Nachdem die App lokal läuft, empfiehlt sich diese Lesereihenfolge:
 
-1. **[AGENT.md](./AGENT.md)** – die KI-Leitplanken (immer zuerst in den Kontext laden!)
-2. **[docs/cursor-context.md](./docs/cursor-context.md)** – stabile Projektreferenz für KI (~4k Tokens; für Context Caching: `@docs/cursor-context.md` laden)
-3. **[Backlog.md](./Backlog.md)** – alle Storys mit Prioritäten und Definition of Done
-4. **[Architektur-Handbuch](./docs/architecture/handbook.md)** – Konzepte, Stack und Regeln
-5. **[Diagramme](./docs/diagrams/diagrams.md)** – Mermaid-Diagramme (Komponenten, Sequenz, ER, …)
-6. **[ADRs](./docs/architecture/decisions/)** – bisherige Architekturentscheidungen (Signals, tRPC, Yjs)
-7. **[Vibe-Coding-Szenario](./docs/vibe-coding/vibe-coding-szenario.md)** – so funktioniert die Zusammenarbeit mit der KI
+1. **[CONTRIBUTING.md](./CONTRIBUTING.md)** – Mitwirken, Story-Wahl, DoD vor PR (Einstieg für Studis)
+2. **[AGENT.md](./AGENT.md)** – die KI-Leitplanken (immer zuerst in den Kontext laden!)
+3. **[docs/cursor-context.md](./docs/cursor-context.md)** – stabile Projektreferenz für KI (~4k Tokens; für Context Caching: `@docs/cursor-context.md` laden)
+4. **[Backlog.md](./Backlog.md)** – alle Storys mit Prioritäten und Definition of Done
+5. **[Architektur-Handbuch](./docs/architecture/handbook.md)** – Konzepte, Stack und Regeln
+6. **[Diagramme](./docs/diagrams/diagrams.md)** – Mermaid-Diagramme (Komponenten, Sequenz, ER, …)
+7. **[ADRs](./docs/architecture/decisions/)** – bisherige Architekturentscheidungen (Signals, tRPC, Yjs)
+8. **[Vibe-Coding-Szenario](./docs/vibe-coding/vibe-coding-szenario.md)** – so funktioniert die Zusammenarbeit mit der KI
 
 > **Tipp:** **Epic 0 (Infrastruktur) ist abgeschlossen** (Redis, tRPC WebSocket, Yjs, Server-Status, Rate-Limiting, CI/CD). Starte mit einer 🔴 Must-Story aus Epic 1 oder 2, die noch ⬜ Offen ist (z.B. Story 1.1 Quiz erstellen). Lies erst den Story-Text im Backlog, dann prompte deine KI mit dem Kontext aus `AGENT.md`.
 

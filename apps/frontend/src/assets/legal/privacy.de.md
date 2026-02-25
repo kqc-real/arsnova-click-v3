@@ -19,15 +19,15 @@ Diese Datenschutzerklärung gilt für die Website **https://arsnova.click** (Inf
 
 Beim Aufruf dieser Website werden durch den betreibenden Server bzw. den Hosting-Anbieter in der Regel automatisch Zugriffsdaten (z. B. IP-Adresse, Datum/Uhrzeit, aufgerufene Seite, übertragene Datenmenge, Browsertyp) in Server-Logs verarbeitet. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse am Betrieb und an der Sicherheit der Website). Die Speicherdauer richtet sich nach den Vorgaben des Hosting-Anbieters; typischerweise werden Logs nach kurzer Frist gelöscht oder anonymisiert.
 
-Diese statische Website setzt **keine Cookies** und führt keine Analyse-Tools (z. B. Google Analytics) aus, sofern nicht ausdrücklich anders angegeben. Sollten Sie auf dieser Website eingebettete Inhalte Dritter (z. B. Karten, Videos) oder Links zu Drittanbietern nutzen, können dort eigene Verarbeitungen stattfinden; dazu siehe Abschnitt zu Drittanbietern.
+Diese Website setzt **keine Cookies** (auch keine Drittanbieter-Cookies) und führt keine Analyse-Tools (z. B. Google Analytics) aus. Schriftarten werden von Google Fonts geladen; dabei werden nach aktuellem Stand keine Cookies gesetzt, jedoch kann Ihr Browser Verbindung zu Servern von Google (USA) aufnehmen. Sofern nicht ausdrücklich anders angegeben, werden keine weiteren eingebetteten Inhalte Dritter (z. B. Karten, Videos) genutzt. Links zu Drittanbietern siehe Abschnitt 4.
 
 ## 4. Verlinkung zu Drittanbietern
 
 Auf dieser Website werden Links zu externen Diensten gesetzt (z. B. GitHub). Beim Klick auf solche Links gelangen Sie auf die Seiten der jeweiligen Anbieter. Dort gelten die Datenschutzerklärungen und Nutzungsbedingungen der jeweiligen Anbieter. Wir haben keinen Einfluss auf deren Datenverarbeitung.
 
-## 5. Hosting (z. B. GitHub Pages)
+## 5. Hosting
 
-Wird diese Website bei einem Diensteanbieter gehostet (z. B. GitHub Pages in den USA), können Zugriffsdaten auf Servern des Anbieters verarbeitet werden. In solchen Fällen kann eine Übermittlung in Drittländer erfolgen. GitHub verarbeitet Daten gemäß seiner Datenschutzerklärung und bietet geeignete Garantien (z. B. Standardvertragsklauseln). Weitere Informationen: [GitHub Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement).
+Website und Anwendung können bei Diensteanbietern (Hosting-Providern) gehostet werden. Dabei können Zugriffsdaten (z. B. IP-Adresse, Zugriffszeit) auf Servern der Anbieter anfallen. Wird in Drittländern (z. B. USA) gehostet, kann eine Übermittlung dorthin erfolgen; dann werden geeignete Garantien (z. B. Standardvertragsklauseln nach Art. 46 DSGVO) vereinbart. Die Informations- und Marketingseite wird ggf. bei GitHub Pages betrieben; Informationen: [GitHub Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement). Die Anwendung arsnova.click kann auf anderem Wege (z. B. eigener Server, EU-Standort) betrieben werden – der konkrete Anbieter und Speicherort ergeben sich aus dem jeweiligen Angebot.
 
 ## 6. Ihre Rechte
 
@@ -49,7 +49,15 @@ Die Bereitstellung personenbezogener Daten ist weder gesetzlich noch vertraglich
 
 ## 8. Hinweis zur Anwendung arsnova.click
 
-Die Anwendung arsnova.click (Quiz, Abstimmungen, Sessions) ist datenschutzfreundlich konzipiert: Quiz-Inhalte werden lokal bzw. bei Self-Hosting auf Ihrem Server gehalten (Local-First). Welche Daten beim Betrieb der Anwendung (z. B. Session-Codes, Nicknames, Abstimmungen) verarbeitet werden, richtet sich nach dem jeweiligen Betreiber (bei Self-Hosting: Ihre Institution). Bitte beachten Sie die dort bereitgestellten Datenschutzhinweise.
+Die Anwendung arsnova.click (Live-Quiz, Q&A, Abstimmungen) ist datenschutzfreundlich konzipiert:
+
+- **Local-First:** Quiz-Inhalte (Fragen, Antworten) werden im Browser des Erstellers lokal gespeichert (IndexedDB/Yjs). Eine dauerhafte serverseitige Speicherung von Quiz-Inhalten erfolgt nicht; beim Start einer Live-Session werden die Daten nur temporär für die Dauer der Session an den Server übertragen.
+- **Speicherung im Browser:** Die Anwendung nutzt Local Storage bzw. IndexedDB für Quiz-Daten, Einstellungen und zuletzt genutzte Session-Codes. Es werden keine Cookies für Tracking oder Analyse gesetzt.
+- **Betrieb der Live-Session (bei Betreib durch den unter Abschnitt 1 genannten Verantwortlichen):** Während einer Session werden u. a. Session-Code, pseudonyme Nicknames (oder im anonymen Modus nur automatisch vergebene Teilnehmer-IDs), Abstimmungen und Punkte verarbeitet. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse am Betrieb der Echtzeit-Anwendung). Es werden keine personenbezogenen Daten ohne Zweckbindung gespeichert.
+- **Bereinigung:** Session-Daten (Abstimmungen, Teilnehmerlisten) werden nach Beendigung der Session bzw. spätestens nach 24 Stunden automatisch bereinigt. Aggregierte Statistiken (z. B. Teilnehmerzahlen) enthalten keine Rückschlüsse auf Einzelpersonen.
+- **Anonymer Modus:** Optional kann ein Modus genutzt werden, in dem keine Nicknames erhoben werden (nur automatische Teilnehmer-IDs), um die Teilnahme besonders datensparsam zu gestalten.
+
+Bei Self-Hosting der Anwendung kann der Verantwortliche ein anderer sein (Ihre Institution). Dann gelten die dort bereitgestellten Datenschutzhinweise.
 
 ## 9. Änderungen
 

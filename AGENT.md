@@ -13,4 +13,4 @@ Für Pfade (`apps/backend`, `apps/frontend`, `libs/shared-types`), strikte Monor
 
 ## 📐 Zusätzliche Angular-Details (zu .cursorrules)
 * **RxJS:** Nur für asynchrone Streams (WebSockets, tRPC-Subscriptions) oder z.B. Debouncing – **niemals** für einfachen UI-State (`BehaviorSubject` ist verboten).
-* **Styling:** Tailwind-Klassen im Template; keine komplexen SCSS-Dateien.
+* **Styling:** Angular Material 3 + Design-Tokens und SCSS-Patterns (kein Tailwind in `apps/frontend`). Siehe ADR 0005 und `docs/ui/STYLEGUIDE.md`.
