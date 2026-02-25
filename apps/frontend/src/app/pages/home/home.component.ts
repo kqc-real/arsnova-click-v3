@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatCard, MatCardActions, MatCardContent, MatCardHeader, MatCardSubtitle, MatCardTitle } from '@angular/material/card';
@@ -40,8 +40,14 @@ import { ThemePresetService } from '../../services/theme-preset.service';
   template: `
     <div class="l-page">
       @if (presetToastVisible()) {
-        <div class="preset-toast">
-          <p class="preset-toast__title">{{ presetToastTitle() }}</p>
+        <div class="preset-toast-backdrop" (click)="dismissPresetToast()">
+          <div class="preset-toast" (click)="$event.stopPropagation()">
+          <div class="preset-toast__head">
+            <p class="preset-toast__title">{{ presetToastTitle() }}</p>
+            <button matIconButton type="button" class="preset-toast__close" aria-label="Hinweis schließen" (click)="dismissPresetToast()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
           <p class="preset-toast__subtitle">Preset-Wirkung</p>
           <mat-chip-set class="preset-toast__chips">
             @for (item of presetToastOn(); track item) {
@@ -54,6 +60,7 @@ import { ThemePresetService } from '../../services/theme-preset.service';
           @if (presetToastHint()) {
             <p class="preset-toast__hint">{{ presetToastHint() }}</p>
           }
+          </div>
         </div>
       }
 
@@ -264,7 +271,7 @@ import { ThemePresetService } from '../../services/theme-preset.service';
             <div class="home-card__meta">
               <p class="home-card__copy">Neue Session für Kurs oder Q&amp;A in wenigen Klicks.</p>
               <a
-                matButton="outlined"
+                matButton
                 class="home-help-btn"
                 href="https://github.com/arsnova-dev/arsnova-click-v3/blob/main/docs/onboarding.md"
                 target="_blank"
@@ -281,11 +288,11 @@ import { ThemePresetService } from '../../services/theme-preset.service';
               <mat-icon class="home-cta__icon">add_circle</mat-icon>
               Session erstellen
             </a>
-            <a matButton="outlined" routerLink="/quiz" class="home-cta" (mouseenter)="preloadQuiz()">
+            <a matButton routerLink="/quiz" class="home-cta" (mouseenter)="preloadQuiz()">
               <mat-icon class="home-cta__icon">quiz</mat-icon>
               Quiz wählen
             </a>
-            <a matButton="outlined" routerLink="/quiz" class="home-cta" (mouseenter)="preloadQuiz()">
+            <a matButton routerLink="/quiz" class="home-cta" (mouseenter)="preloadQuiz()">
               <mat-icon class="home-cta__icon">question_answer</mat-icon>
               Q&amp;A
             </a>
@@ -312,11 +319,11 @@ import { ThemePresetService } from '../../services/theme-preset.service';
                 Quiz aus Vorlage erstellen
               </a>
               <div class="home-subcard__demo l-stack l-stack--xs">
-                <a matButton="outlined" routerLink="/quiz" class="home-subcard__demo-btn" (mouseenter)="preloadQuiz()">
+                <a matButton routerLink="/quiz" class="home-subcard__demo-btn" (mouseenter)="preloadQuiz()">
                   <mat-icon class="home-subcard__link-icon">play_circle</mat-icon>
                   Demo starten
                 </a>
-                <a matButton="outlined" [routerLink]="['/session', demoSessionCode]" class="home-subcard__demo-btn">
+                <a matButton [routerLink]="['/session', demoSessionCode]" class="home-subcard__demo-btn">
                   <mat-icon class="home-subcard__link-icon">group_add</mat-icon>
                   Demo beitreten
                 </a>
@@ -348,12 +355,20 @@ import { ThemePresetService } from '../../services/theme-preset.service';
     </div>
   `,
   styles: [`
+    .preset-toast-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      background: transparent;
+    }
+
     .preset-toast {
       position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
       user-select: none;
-      right: 1rem;
-      bottom: 1rem;
-      z-index: 70;
+      z-index: 71;
       width: min(92vw, 24rem);
       border-radius: var(--mat-sys-corner-large);
       border: 1px solid var(--mat-sys-outline-variant);
@@ -362,9 +377,22 @@ import { ThemePresetService } from '../../services/theme-preset.service';
       box-shadow: var(--mat-sys-level3);
     }
 
+    .preset-toast__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
     .preset-toast__title {
       margin: 0;
       font: var(--mat-sys-title-small);
+      flex: 1;
+    }
+
+    .preset-toast__close {
+      flex-shrink: 0;
+      margin: -0.25rem -0.25rem 0 0;
     }
 
     .preset-toast__subtitle,
@@ -385,7 +413,6 @@ import { ThemePresetService } from '../../services/theme-preset.service';
       z-index: 10;
       margin-bottom: 1.25rem;
       border-radius: var(--mat-sys-corner-extra-large);
-      border: 1px solid var(--mat-sys-outline-variant);
       background: var(--mat-sys-surface-container);
       padding: 1rem;
       box-shadow: var(--mat-sys-level1);
@@ -709,7 +736,6 @@ import { ThemePresetService } from '../../services/theme-preset.service';
     .home-subcard__demo {
       margin-top: 0.75rem;
       padding-top: 0.75rem;
-      border-top: 1px solid var(--mat-sys-outline-variant);
     }
 
     .home-subcard__demo-btn {
@@ -775,7 +801,7 @@ import { ThemePresetService } from '../../services/theme-preset.service';
     }
   `],
 })
-export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
+export class HomeComponent implements OnInit, AfterViewInit {
   private readonly router = inject(Router);
   @ViewChild('homeHeader') private readonly homeHeader?: ElementRef<HTMLElement>;
   @ViewChild('controlsToggleBtn') private readonly controlsToggleBtn?: ElementRef<HTMLButtonElement>;
@@ -804,8 +830,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   presetToastOn = signal<string[]>([]);
   presetToastOff = signal<string[]>([]);
   presetToastHint = signal('');
-  private presetToastTimer: ReturnType<typeof setTimeout> | null = null;
-
   isValidSessionCode = computed(() => /^[A-Z0-9]{6}$/.test(this.sessionCode()));
   readonly demoSessionCode = 'DEMO01';
 
@@ -867,11 +891,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     await this.joinSession();
   }
 
-  ngOnDestroy(): void {
-    if (this.presetToastTimer) {
-      clearTimeout(this.presetToastTimer);
-      this.presetToastTimer = null;
-    }
+  dismissPresetToast(): void {
+    this.presetToastVisible.set(false);
   }
 
   setLanguage(code: 'de' | 'en' | 'fr' | 'it' | 'es'): void {
@@ -960,10 +981,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private showPresetToast(preset: 'serious' | 'spielerisch'): void {
-    if (this.presetToastTimer) {
-      clearTimeout(this.presetToastTimer);
-      this.presetToastTimer = null;
-    }
     if (preset === 'serious') {
       this.presetToastTitle.set('Preset: Seriös');
       this.presetToastOn.set(['Anonym']);
@@ -976,9 +993,5 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       this.presetToastHint.set('');
     }
     this.presetToastVisible.set(true);
-    this.presetToastTimer = setTimeout(() => {
-      this.presetToastVisible.set(false);
-      this.presetToastTimer = null;
-    }, 7000);
   }
 }
