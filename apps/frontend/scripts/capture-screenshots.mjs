@@ -48,25 +48,34 @@ async function main() {
 
   const page = await context.newPage();
 
+  // Dark Mode + Spielerisch-Preset für Screenshots (nach Load setzen)
+  const applyScreenshotTheme = () =>
+    page.evaluate(() => {
+      document.documentElement.classList.remove('light');
+      document.documentElement.classList.add('dark', 'preset-playful');
+    });
+
   // Desktop: 1280x720
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto(BASE_URL, { waitUntil: 'networkidle' });
+  await applyScreenshotTheme();
   await page.waitForTimeout(800); // Kurz warten für Animationen/Render
   await page.screenshot({
     path: join(iconsDir, 'screenshot-wide.png'),
     fullPage: false,
   });
-  console.log('Generated screenshot-wide.png (1280x720)');
+  console.log('Generated screenshot-wide.png (1280x720, dark, spielerisch)');
 
   // Mobile: 390x844
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(BASE_URL, { waitUntil: 'networkidle' });
+  await applyScreenshotTheme();
   await page.waitForTimeout(800);
   await page.screenshot({
     path: join(iconsDir, 'screenshot-narrow.png'),
     fullPage: false,
   });
-  console.log('Generated screenshot-narrow.png (390x844)');
+  console.log('Generated screenshot-narrow.png (390x844, dark, spielerisch)');
 
   await browser.close();
   console.log('Fertig.');
