@@ -25,7 +25,7 @@ export const voteRouter = router({
         include: { session: true },
       });
       if (!participant) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Teilnehmer oder Session nicht gefunden.' });
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Teilnehmende oder Session nicht gefunden.' });
       }
       if (participant.session.status === 'FINISHED') {
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'Diese Session ist beendet.' });

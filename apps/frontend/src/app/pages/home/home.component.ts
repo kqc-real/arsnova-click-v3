@@ -48,7 +48,7 @@ import { ThemePresetService } from '../../services/theme-preset.service';
               <mat-icon>close</mat-icon>
             </button>
           </div>
-          <p class="preset-toast__subtitle">Preset-Wirkung</p>
+          <p class="preset-toast__subtitle">Auswirkung des Presets</p>
           <mat-chip-set class="preset-toast__chips">
             @for (item of presetToastOn(); track item) {
               <mat-chip highlighted>{{ item }} an</mat-chip>
@@ -87,7 +87,7 @@ import { ThemePresetService } from '../../services/theme-preset.service';
             class="mobile-only"
             [attr.aria-expanded]="controlsMenuOpen() ? 'true' : 'false'"
             aria-controls="home-controls-mobile"
-            aria-label="Schalter öffnen"
+            aria-label="Einstellungen öffnen"
             (click)="toggleControlsMenu()"
           >
             <mat-icon>menu</mat-icon>
@@ -192,8 +192,8 @@ import { ThemePresetService } from '../../services/theme-preset.service';
       </header>
 
       <main class="home-main">
-        <p class="home-hero">Live-Quiz &amp; Abstimmung in wenigen Klicks</p>
-        <p class="home-trust-badges">100 % DSGVO-konform · Open Source · Kostenlos</p>
+        <p class="home-hero">Live-Quiz und Abstimmung – in wenigen Klicks</p>
+        <p class="home-trust-badges">100 % DSGVO-konform · Open Source · kostenlos</p>
 
         <mat-card appearance="raised" id="student-entry" class="home-card">
           <mat-card-header>
@@ -215,7 +215,7 @@ import { ThemePresetService } from '../../services/theme-preset.service';
                 }
               </div>
             }
-            <p class="home-code-help">A–Z, 0–9 · 6 Zeichen</p>
+            <p class="home-code-help">Großbuchstaben und Zahlen, 6 Zeichen</p>
 
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="home-code-field">
               <mat-label>Session-Code</mat-label>
@@ -226,7 +226,6 @@ import { ThemePresetService } from '../../services/theme-preset.service';
                 [value]="sessionCode()"
                 (input)="onSessionCodeInput($event)"
                 (keydown.enter)="joinSession()"
-                placeholder="Code eingeben"
                 autocapitalize="characters"
                 autocomplete="off"
                 spellcheck="false"
@@ -262,14 +261,14 @@ import { ThemePresetService } from '../../services/theme-preset.service';
           <mat-card-header>
             <mat-card-subtitle>
               <mat-icon class="home-card__icon">school</mat-icon>
-              Lehrkraft
+              Lehrperson
             </mat-card-subtitle>
             <mat-card-title class="home-card__title">Erstellen</mat-card-title>
           </mat-card-header>
 
           <mat-card-content>
             <div class="home-card__meta">
-              <p class="home-card__copy">Neue Session für Kurs oder Q&amp;A in wenigen Klicks.</p>
+              <p class="home-card__copy">Starten Sie eine Quiz-Session oder Q&amp;A-Runde – in wenigen Klicks.</p>
               <a
                 matButton
                 class="home-help-btn"
@@ -290,7 +289,7 @@ import { ThemePresetService } from '../../services/theme-preset.service';
             </a>
             <a matButton routerLink="/quiz" class="home-cta" (mouseenter)="preloadQuiz()">
               <mat-icon class="home-cta__icon">quiz</mat-icon>
-              Quiz wählen
+              Quiz auswählen
             </a>
             <a matButton routerLink="/quiz" class="home-cta" (mouseenter)="preloadQuiz()">
               <mat-icon class="home-cta__icon">question_answer</mat-icon>
@@ -309,16 +308,16 @@ import { ThemePresetService } from '../../services/theme-preset.service';
             </mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            <div class="home-subcard__links l-stack l-stack--xs">
+            <div class="home-subcard__links l-stack l-stack--sm">
               <a matButton routerLink="/quiz" class="home-subcard__link" (mouseenter)="preloadQuiz()">
                 <mat-icon class="home-subcard__link-icon">menu_book</mat-icon>
-                Zur Bibliothek
+                Bibliothek öffnen
               </a>
               <a matButton routerLink="/quiz" class="home-subcard__link" (mouseenter)="preloadQuiz()">
                 <mat-icon class="home-subcard__link-icon">content_copy</mat-icon>
-                Quiz aus Vorlage erstellen
+                Neues Quiz aus Vorlage
               </a>
-              <div class="home-subcard__demo l-stack l-stack--xs">
+              <div class="home-subcard__demo l-stack l-stack--sm">
                 <a matButton routerLink="/quiz" class="home-subcard__demo-btn" (mouseenter)="preloadQuiz()">
                   <mat-icon class="home-subcard__link-icon">play_circle</mat-icon>
                   Demo starten
@@ -341,9 +340,9 @@ import { ThemePresetService } from '../../services/theme-preset.service';
           </mat-card-header>
           <mat-card-content>
             @if (apiStatus()) {
-              <p class="home-subcard__body">Backend online</p>
+              <p class="home-subcard__body">Server erreichbar</p>
             } @else {
-              <p class="home-subcard__body">Backend nicht erreichbar</p>
+              <p class="home-subcard__body">Server nicht erreichbar</p>
               <button matButton="outlined" class="home-retry-btn" (click)="retryConnection()" [disabled]="apiRetrying()">
                 {{ apiRetrying() ? 'Verbinde…' : 'Erneut verbinden' }}
               </button>
@@ -668,12 +667,20 @@ import { ThemePresetService } from '../../services/theme-preset.service';
     }
 
     .home-code-field input {
-      text-align: center;
+      text-align: left;
       text-transform: uppercase;
       letter-spacing: 0.25em;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-weight: 600;
       font-size: 1.1rem;
+      caret-color: var(--mat-sys-primary);
+    }
+
+    .home-code-field input::placeholder {
+      text-transform: none;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      letter-spacing: normal;
+      font-weight: normal;
     }
 
     @media (min-width: 600px) {
@@ -734,8 +741,8 @@ import { ThemePresetService } from '../../services/theme-preset.service';
     }
 
     .home-subcard__demo {
-      margin-top: 0.75rem;
-      padding-top: 0.75rem;
+      margin-top: 0;
+      padding-top: 0;
     }
 
     .home-subcard__demo-btn {
