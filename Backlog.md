@@ -28,6 +28,7 @@
 | 1    | 1.5   | Local-First Speicherung                       | 🔴   | ⬜ Offen  |
 | 1    | 1.6   | Yjs Multi-Device-Sync                         | 🟢   | ⬜ Offen  |
 | 1    | 1.6a  | Quiz auf anderem Gerät öffnen (Sync-Key/Link) | 🟡   | ⬜ Offen  |
+| 1    | 1.6b  | Preset & Optionen beim Sync mitführen          | 🟢   | ⬜ Offen  |
 | 1    | 1.7   | Markdown & KaTeX                              | 🔴   | ⬜ Offen  |
 | 1    | 1.8   | Quiz exportieren                              | 🟡   | ⬜ Offen  |
 | 1    | 1.9   | Quiz importieren                              | 🟡   | ⬜ Offen  |
@@ -249,6 +250,12 @@ Eine Story gilt als **fertig**, wenn **alle** folgenden Kriterien erfüllt sind:
     - Auf dem anderen Gerät: Nutzer gibt die App-URL ein, öffnet den Sync-Link (oder scannt den QR-Code / gibt den Sync-Code ein) und gelangt zum **gleichen Quiz** (Bearbeitung, Preview, ggf. Session starten/steuern). Kein erneutes Anlegen des Quiz nötig.
     - **Trennung von Session-Code:** Der 6-stellige Session-Beitrittscode (für Studenten) wird nicht als Sync-Key verwendet und gewährt keinen Zugriff auf die Quiz-Bearbeitung. Nur wer den Sync-Link/Code hat, kann das Quiz bearbeiten oder live steuern.
     - Abhängig von Story 1.6 (Yjs Multi-Device-Sync) und Story 0.3 (y-websocket).
+- **Story 1.6b (Preset & Optionen beim Sync mitführen):** 🟢 Als Dozent möchte ich beim Synchronisieren mit einem anderen Client (Sync-Link/Key, Story 1.6/1.6a) auch meine **Preset- und Optionen-Einstellungen** (Seriös/Spielerisch, alle Toast-Optionen wie Leaderboard, Sound, Lesephase, Team, …) mitgeführt haben, damit auf dem anderen Gerät dieselben Voreinstellungen ankommen und nicht auf Standard zurückfallen.
+  - **Akzeptanzkriterien:**
+    - Preset (home-preset) und Optionen (home-preset-options) werden nicht nur in localStorage gehalten, sondern zusätzlich in einem **kleinen Yjs-Dokument** (z. B. „Preferences“) persistiert, das über den **gleichen Sync-Kanal** wie das Quiz (oder einen abgeleiteten Room) synchronisiert wird.
+    - Beim Öffnen eines Sync-Links auf dem anderen Client werden diese Einstellungen übernommen (Preset-Anzeige, Optionen-Chips); bei Konflikt gewinnt „last write“ oder CRDT-Merge (z. B. einzelne Optionen als Y-Map).
+    - Ohne aktiven Sync bleibt das bisherige Verhalten (nur localStorage); mit Sync werden Änderungen an Preset/Optionen ins Yjs-Dokument geschrieben und so auf andere Clients übertragen.
+    - Abhängig von Story 1.6 bzw. 1.6a (Sync-Link/Key muss vorhanden sein).
 - **Story 1.7 (Markdown & KaTeX):** 🔴 Als Dozent möchte ich im Fragenstamm und in den Antwortoptionen Markdown und KaTeX-Formeln verwenden können, damit ich mathematische und formatierte Inhalte ansprechend darstellen kann.
   - **Akzeptanzkriterien:**
     - Fragenstamm (`Question.text`) und Antworttext (`AnswerOption.text`) akzeptieren Markdown-Syntax (Fett, Kursiv, Listen, Code-Blöcke, Bilder).
@@ -282,12 +289,28 @@ Eine Story gilt als **fertig**, wenn **alle** folgenden Kriterien erfüllt sind:
     - Alle Operationen erfolgen rein clientseitig (Local-First).
 - **Story 1.11 (Quiz-Presets):** 🟡 Als Dozent möchte ich beim Erstellen eines Quizzes ein Preset auswählen können, das alle Gamification-Einstellungen auf einmal setzt, damit ich schnell zwischen spielerischem und seriösem Modus wechseln kann.
   - **Akzeptanzkriterien:**
-    - Neues Feld `quizPreset` in der Quiz-Konfiguration mit zwei Werten:
-      - **🎮 Spielerisch** (default): `showLeaderboard=true`, `enableSoundEffects=true`, `enableRewardEffects=true`, `enableMotivationMessages=true`, `enableEmojiReactions=true`, `anonymousMode=false`.
-      - **🎓 Seriös**: `showLeaderboard=false`, `enableSoundEffects=false`, `enableRewardEffects=false`, `enableMotivationMessages=false`, `enableEmojiReactions=false`, `anonymousMode=true`, `defaultTimer=null` (offene Antwortphase).
-    - Beim Auswählen eines Presets werden die zugehörigen Toggle-Werte automatisch gesetzt — der Dozent kann sie anschließend einzeln überschreiben.
-    - Das Preset dient nur als Komfortfunktion; es wird **nicht** als eigener Wert gespeichert — die Einzelwerte sind maßgeblich.
+    - Es gibt **zwei** Presets in der Quiz-Konfiguration:
+      - **🎮 Spielerisch** (default): setzt `showLeaderboard=true`, `enableSoundEffects=true`, `enableRewardEffects=true`, `enableMotivationMessages=true`, `enableEmojiReactions=true`, `anonymousMode=false`.
+      - **🎓 Seriös**: setzt `showLeaderboard=false`, `enableSoundEffects=false`, `enableRewardEffects=false`, `enableMotivationMessages=false`, `enableEmojiReactions=false`, `anonymousMode=true`, `defaultTimer=null` (offene Antwortphase).
+    - **Einzeloptionen sind auswählbar:** Jede Option kann unabhängig an- oder abgewählt bzw. gesetzt werden; die UI bietet pro Option einen klaren Toggle oder Eingabefeld. Nach Auswahl eines Presets kann der Dozent jede Einzeloption überschreiben. Die gewählten **Einzelwerte werden gespeichert** — im Quiz-Dokument (Yjs) und damit persistent (Local-First, Sync über Yjs).
+    - Das Preset dient nur als Komfortfunktion zum einmaligen Vorsetzen der Werte; **maßgeblich und gespeichert sind die Einzelwerte** (über Yjs), nicht das Preset selbst.
     - Ein visueller Hinweis (Badge „Spielerisch" / „Seriös") zeigt an, welchem Preset die aktuelle Konfiguration entspricht. Wenn Einzelwerte abweichen, wird „Benutzerdefiniert" angezeigt.
+    - **Bedeutung der Einzeloptionen** (alle Quiz-Konfigurationsoptionen, auswählbar; Referenz: Prisma Quiz, CreateQuizInput):
+      - **showLeaderboard** — Leaderboard mit Rangfolge anzeigen (ja/nein).
+      - **allowCustomNicknames** — Eigene Pseudonyme erlauben oder nur vordefinierte Liste (Story 1.4) (ja/nein).
+      - **defaultTimer** — Standard-Countdown in Sekunden pro Frage (Zahl oder „offen" / null).
+      - **enableSoundEffects** — Sound-Effekte bei Aktionen (ja/nein).
+      - **enableRewardEffects** — Belohnungseffekte (ja/nein).
+      - **enableMotivationMessages** — Motivationsmeldungen (ja/nein).
+      - **enableEmojiReactions** — Emoji-Reaktionen (ja/nein).
+      - **anonymousMode** — Anonymer Modus (keine Nickname-Auswahl, automatische IDs) (ja/nein).
+      - **readingPhaseEnabled** — Lesephase: Frage zuerst lesen, dann „Antworten freigeben" (Story 2.6) (ja/nein).
+      - **nicknameTheme** — Thema für vordefinierte Nicknames, z. B. Nobelpreisträger, Tiere (Story 3.2) (Auswahl).
+      - **teamMode** — Team-Modus: Teilnehmer in Teams (Story 7.1) (ja/nein).
+      - **teamCount** — Anzahl Teams bei Team-Modus (2–8, nur bei teamMode=true).
+      - **teamAssignment** — Zuweisung zu Teams: automatisch oder manuell (Story 7.1) (Auswahl).
+      - **backgroundMusic** — Hintergrundmusik in Lobby/Countdown (Story 5.3): Track-Name oder aus (optional).
+      - **bonusTokenCount** — Anzahl Top-Plätze mit Bonus-Token (1–50, null = deaktiviert) (Story 4.6).
     - Presets sind auch beim Bearbeiten (Story 1.10) verfügbar.
 - **Story 1.12 (SC-Schnellformate):** 🟡 Als Dozent möchte ich beim Erstellen einer Single-Choice-Frage aus vorkonfigurierten Antwortformaten wählen können, damit ich häufig benötigte Formate mit einem Klick einfügen kann.
   - **Akzeptanzkriterien:**

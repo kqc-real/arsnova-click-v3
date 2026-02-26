@@ -12,6 +12,62 @@ import { trpc } from '../../trpc.client';
 import { ServerStatusWidgetComponent } from '../../components/server-status-widget/server-status-widget.component';
 import { ThemePresetService } from '../../services/theme-preset.service';
 
+const PRESET_OPTIONS_STORAGE = 'home-preset-options';
+
+/** Kategorien für die Optionen (Reihenfolge der Anzeige) */
+const PRESET_CATEGORIES = [
+  { id: 'gamification', label: 'Gamification & Auswertung', order: 0 },
+  { id: 'participation', label: 'Teilnahme & Nicknames', order: 1 },
+  { id: 'flow', label: 'Ablauf & Zeit', order: 2 },
+  { id: 'team', label: 'Team', order: 3 },
+  { id: 'audio', label: 'Audio', order: 4 },
+] as const;
+
+type CategoryId = (typeof PRESET_CATEGORIES)[number]['id'];
+
+/** Alle Preset-Optionen mit Kategorie und Label */
+const PRESET_OPTION_IDS = [
+  { id: 'showLeaderboard', label: 'Leaderboard', categoryId: 'gamification' as CategoryId },
+  { id: 'enableRewardEffects', label: 'Belohnung', categoryId: 'gamification' as CategoryId },
+  { id: 'enableMotivationMessages', label: 'Motivation', categoryId: 'gamification' as CategoryId },
+  { id: 'enableEmojiReactions', label: 'Emoji', categoryId: 'gamification' as CategoryId },
+  { id: 'bonusTokenCount', label: 'Bonus-Token', categoryId: 'gamification' as CategoryId },
+  { id: 'allowCustomNicknames', label: 'Eigene Nicknames', categoryId: 'participation' as CategoryId },
+  { id: 'anonymousMode', label: 'Anonym', categoryId: 'participation' as CategoryId },
+  { id: 'nicknameTheme', label: 'Nickname-Thema', categoryId: 'participation' as CategoryId },
+  { id: 'defaultTimer', label: 'Timer', categoryId: 'flow' as CategoryId },
+  { id: 'readingPhaseEnabled', label: 'Lesephase', categoryId: 'flow' as CategoryId },
+  { id: 'teamMode', label: 'Team-Modus', categoryId: 'team' as CategoryId },
+  { id: 'teamCount', label: 'Anzahl Teams', categoryId: 'team' as CategoryId },
+  { id: 'teamAssignment', label: 'Team-Zuweisung', categoryId: 'team' as CategoryId },
+  { id: 'enableSoundEffects', label: 'Sound', categoryId: 'audio' as CategoryId },
+  { id: 'backgroundMusic', label: 'Hintergrundmusik', categoryId: 'audio' as CategoryId },
+] as const;
+
+type PresetOptionState = Record<string, boolean>;
+
+function getPresetDefaults(preset: 'serious' | 'spielerisch'): PresetOptionState {
+  const base: PresetOptionState = {};
+  for (const o of PRESET_OPTION_IDS) {
+    base[o.id] = false;
+  }
+  if (preset === 'serious') {
+    base['anonymousMode'] = true;
+    base['readingPhaseEnabled'] = true;
+    base['defaultTimer'] = false; // offen
+  } else {
+    base['showLeaderboard'] = true;
+    base['allowCustomNicknames'] = true;
+    base['defaultTimer'] = true;
+    base['enableSoundEffects'] = true;
+    base['enableRewardEffects'] = true;
+    base['enableMotivationMessages'] = true;
+    base['enableEmojiReactions'] = true;
+    base['readingPhaseEnabled'] = false;
+  }
+  return base;
+}
+
 @Component({
   selector: 'app-home',
   imports: [
@@ -48,23 +104,39 @@ import { ThemePresetService } from '../../services/theme-preset.service';
               <mat-icon>close</mat-icon>
             </button>
           </div>
-          <p class="preset-toast__subtitle">Auswirkung des Presets</p>
-          <mat-chip-set class="preset-toast__chips">
-            @for (item of presetToastOn(); track item) {
-              <mat-chip highlighted>{{ item }} an</mat-chip>
+          <p class="preset-toast__subtitle">Optionen an/aus — Klick wechselt, Speichern übernimmt</p>
+          <div class="preset-toast__categories">
+            @for (group of presetOptionsByCategory(); track group.categoryId) {
+              <div class="preset-toast__category">
+                <p class="preset-toast__category-label">{{ group.categoryLabel }}</p>
+                <mat-chip-set class="preset-toast__chips">
+                  @for (opt of group.options; track opt.id) {
+                    <mat-chip
+                      [highlighted]="presetOptionState()[opt.id]"
+                      (click)="togglePresetOption(opt.id)"
+                      role="button"
+                      tabindex="0"
+                      [attr.aria-pressed]="presetOptionState()[opt.id]"
+                      [attr.aria-label]="opt.label + (presetOptionState()[opt.id] ? ' an' : ' aus')"
+                    >
+                      {{ opt.label }} {{ presetOptionState()[opt.id] ? 'an' : 'aus' }}
+                    </mat-chip>
+                  }
+                </mat-chip-set>
+              </div>
             }
-            @for (item of presetToastOff(); track item) {
-              <mat-chip>{{ item }} aus</mat-chip>
-            }
-          </mat-chip-set>
-          @if (presetToastHint()) {
-            <p class="preset-toast__hint">{{ presetToastHint() }}</p>
-          }
+          </div>
+          <div class="preset-toast__actions">
+            <button mat-button type="button" (click)="resetPresetOptions()">Zurücksetzen</button>
+            <button mat-flat-button type="button" color="primary" (click)="savePresetAndCloseToast()">
+              Speichern
+            </button>
+          </div>
           </div>
         </div>
       }
 
-      <header #homeHeader class="home-header" role="banner">
+      <header #homeHeader class="home-header" [class.home-header--above-toast]="presetToastVisible()" role="banner">
         <div class="home-header__row">
           <div class="home-brand">
             <svg class="home-brand__icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -96,15 +168,14 @@ import { ThemePresetService } from '../../services/theme-preset.service';
           <div class="home-controls desktop-only">
             <mat-button-toggle-group
               [value]="themePreset.preset()"
-              (change)="setPreset($event.value)"
               appearance="standard"
               aria-label="Preset auswählen"
               class="home-icon-toggles"
             >
-              <mat-button-toggle value="serious">
+              <mat-button-toggle value="serious" (click)="setPreset('serious')">
                 <mat-icon>school</mat-icon> Seriös
               </mat-button-toggle>
-              <mat-button-toggle value="spielerisch">
+              <mat-button-toggle value="spielerisch" (click)="setPreset('spielerisch')">
                 <mat-icon class="home-preset-icon--playful">celebration</mat-icon> Spielerisch
               </mat-button-toggle>
             </mat-button-toggle-group>
@@ -145,15 +216,14 @@ import { ThemePresetService } from '../../services/theme-preset.service';
           <div id="home-controls-mobile" class="home-controls-mobile l-stack l-stack--sm">
             <mat-button-toggle-group
               [value]="themePreset.preset()"
-              (change)="setPreset($event.value, true)"
               appearance="standard"
               aria-label="Preset auswählen"
               class="home-icon-toggles home-preset-toggle--full"
             >
-              <mat-button-toggle value="serious">
+              <mat-button-toggle value="serious" (click)="setPreset('serious', true)">
                 <mat-icon>school</mat-icon> Seriös
               </mat-button-toggle>
-              <mat-button-toggle value="spielerisch">
+              <mat-button-toggle value="spielerisch" (click)="setPreset('spielerisch', true)">
                 <mat-icon class="home-preset-icon--playful">celebration</mat-icon> Spielerisch
               </mat-button-toggle>
             </mat-button-toggle-group>
@@ -368,7 +438,8 @@ import { ThemePresetService } from '../../services/theme-preset.service';
       transform: translate(-50%, -50%);
       user-select: none;
       z-index: 71;
-      width: min(92vw, 24rem);
+      width: min(96vw, 42rem);
+      overflow: visible;
       border-radius: var(--mat-sys-corner-large);
       border: 1px solid var(--mat-sys-outline-variant);
       background: var(--mat-sys-surface-container);
@@ -401,9 +472,37 @@ import { ThemePresetService } from '../../services/theme-preset.service';
       color: var(--mat-sys-on-surface-variant);
     }
 
-    .preset-toast__chips {
+    .preset-toast__categories {
       margin-top: 0.5rem;
-      pointer-events: none;
+    }
+
+    .preset-toast__category {
+      margin-top: 0.75rem;
+    }
+
+    .preset-toast__category:first-child {
+      margin-top: 0;
+    }
+
+    .preset-toast__category-label {
+      margin: 0 0 0.35rem 0;
+      font: var(--mat-sys-label-small);
+      color: var(--mat-sys-on-surface-variant);
+    }
+
+    .preset-toast__chips {
+      margin-top: 0.25rem;
+    }
+
+    .preset-toast__chips mat-chip {
+      cursor: pointer;
+    }
+
+    .preset-toast__actions {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
     }
 
     .home-header {
@@ -415,6 +514,10 @@ import { ThemePresetService } from '../../services/theme-preset.service';
       background: var(--mat-sys-surface-container);
       padding: 1rem;
       box-shadow: var(--mat-sys-level1);
+    }
+
+    .home-header--above-toast {
+      z-index: 72;
     }
 
     .home-header__row {
@@ -861,9 +964,24 @@ export class HomeComponent implements OnInit, AfterViewInit {
   controlsMenuOpen = signal(false);
   presetToastVisible = signal(false);
   presetToastTitle = signal('');
-  presetToastOn = signal<string[]>([]);
-  presetToastOff = signal<string[]>([]);
-  presetToastHint = signal('');
+  /** Zustand jeder Option (an = true, aus = false); wird beim Speichern in localStorage geschrieben */
+  presetOptionState = signal<PresetOptionState>({});
+  readonly presetOptionList = PRESET_OPTION_IDS;
+  /** Nach Kategorien gruppiert; innerhalb jeder Kategorie ausgewählte (an) zuerst */
+  presetOptionsByCategory = computed(() => {
+    const state = this.presetOptionState();
+    const byCat = new Map<CategoryId, typeof PRESET_OPTION_IDS[number][]>();
+    for (const opt of this.presetOptionList) {
+      const list = byCat.get(opt.categoryId) ?? [];
+      list.push(opt);
+      byCat.set(opt.categoryId, list);
+    }
+    return PRESET_CATEGORIES.map((cat) => {
+      const options = byCat.get(cat.id) ?? [];
+      const sorted = [...options].sort((a, b) => (state[b.id] ? 1 : 0) - (state[a.id] ? 1 : 0));
+      return { categoryId: cat.id, categoryLabel: cat.label, options: sorted };
+    }).filter((g) => g.options.length > 0);
+  });
   isValidSessionCode = computed(() => /^[A-Z0-9]{6}$/.test(this.sessionCode()));
   readonly demoSessionCode = 'DEMO01';
 
@@ -941,8 +1059,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   setPreset(value: string | null, closeMenu = false): void {
     const nextPreset = value === 'serious' || value === 'spielerisch' ? value : null;
-    if (nextPreset && this.themePreset.preset() !== nextPreset) {
-      this.themePreset.setPreset(nextPreset);
+    if (nextPreset) {
+      if (this.themePreset.preset() !== nextPreset) {
+        this.themePreset.setPreset(nextPreset);
+      }
       this.showPresetToast(nextPreset);
     }
     if (closeMenu) this.closeControlsMenu();
@@ -1014,18 +1134,48 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private showPresetToast(preset: 'serious' | 'spielerisch'): void {
-    if (preset === 'serious') {
-      this.presetToastTitle.set('Preset: Seriös');
-      this.presetToastOn.set(['Anonym']);
-      this.presetToastOff.set(['Leaderboard', 'Sound', 'Belohnung', 'Motivation', 'Emoji']);
-      this.presetToastHint.set('Antwortphase offen (kein Standard-Timer).');
-    } else {
-      this.presetToastTitle.set('Preset: Spielerisch');
-      this.presetToastOn.set(['Leaderboard', 'Sound', 'Belohnung', 'Motivation', 'Emoji', 'Nicknames']);
-      this.presetToastOff.set([]);
-      this.presetToastHint.set('');
+  togglePresetOption(id: string): void {
+    const state = { ...this.presetOptionState() };
+    state[id] = !state[id];
+    this.presetOptionState.set(state);
+  }
+
+  resetPresetOptions(): void {
+    const preset = this.themePreset.preset();
+    this.presetOptionState.set(getPresetDefaults(preset));
+  }
+
+  savePresetAndCloseToast(): void {
+    try {
+      localStorage.setItem(PRESET_OPTIONS_STORAGE, JSON.stringify(this.presetOptionState()));
+    } catch {
+      // Quota oder nicht verfügbar
     }
+    this.themePreset.setPreset(this.themePreset.preset());
+    this.presetToastVisible.set(false);
+  }
+
+  private showPresetToast(preset: 'serious' | 'spielerisch'): void {
+    this.presetToastTitle.set(preset === 'serious' ? 'Preset: Seriös' : 'Preset: Spielerisch');
+    let state: PresetOptionState;
+    try {
+      const raw = localStorage.getItem(PRESET_OPTIONS_STORAGE);
+      const parsed = raw ? (JSON.parse(raw) as PresetOptionState) : null;
+      if (parsed && typeof parsed === 'object') {
+        const defaults = getPresetDefaults(preset);
+        state = { ...defaults };
+        for (const o of PRESET_OPTION_IDS) {
+          if (o.id in parsed && typeof (parsed as Record<string, unknown>)[o.id] === 'boolean') {
+            state[o.id] = (parsed as Record<string, boolean>)[o.id];
+          }
+        }
+      } else {
+        state = getPresetDefaults(preset);
+      }
+    } catch {
+      state = getPresetDefaults(preset);
+    }
+    this.presetOptionState.set(state);
     this.presetToastVisible.set(true);
   }
 }

@@ -79,7 +79,7 @@ Tokenbasierte Card-Flaeche:
 
 ## Startseite: Buttons und Toast
 - **Button-Hierarchie:** Nur ein gefuellter CTA pro Kontext (z. B. „Session erstellen“ auf der Erstellen-Karte). Uebrige Aktionen als Text-Buttons ohne Umrandung (Bibliothek, Erstellen-Karte: Quiz auswaehlen, Q&amp;A, Hilfe).
-- **Toast (Preset-Hinweis):** Zentriert, mit Close-Button; Schliessen per Klick auf Backdrop oder Button. Kein Auto-Close-Timer.
+- **Toast (Preset-Hinweis):** Zentriert, mit Close-Button; alle Optionen (Leaderboard, Sound, Lesephase, Team, …) als **toggelbare Chips** nach Kategorien (Gamification, Teilnahme, Ablauf, Team, Audio). Ausgewählte Chips zuerst; Speichern übernimmt, Zurücksetzen setzt Preset-Defaults. Einstellungen in **localStorage** (Keys `home-preset`, `home-preset-options`); Sync über Yjs geplant (Story 1.6b). Schliessen per Backdrop, Close oder Speichern. Header erhält bei geöffnetem Toast höheren z-index, damit Preset-Toggle mit einem Klick wechselt.
 - **Abstaende:** Einheitlicher Button-/Link-Abstand auf Karten ueber `l-stack--sm` (0,5rem).
 
 ## Nicht erlaubt
