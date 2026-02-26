@@ -29,6 +29,7 @@
     "@trpc/client": "^10.45.0",
     "katex": "^0.16.32",
     "marked": "^17.0.3",
+    "material-icons": "^1.13.14",
     "rxjs": "~7.8.0",
     "tslib": "^2.7.0",
     "y-indexeddb": "^9.0.12",

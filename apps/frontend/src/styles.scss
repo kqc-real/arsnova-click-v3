@@ -1,12 +1,41 @@
 @use '@angular/material' as mat;
 
 // ---------------------------------------------------------------------------
+// 0) Material Icons selbst gehostet (kein Google-Request, kein Tracking)
+// ---------------------------------------------------------------------------
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('assets/fonts/material-icons.woff2') format('woff2');
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'liga';
+}
+
+// ---------------------------------------------------------------------------
 // 1) Theme Foundation – ADR 0005, Regel 1
 //    mat.theme() erzeugt alle --mat-sys-* CSS Custom Properties.
 //    Farben nutzen light-dark() – gesteuert über color-scheme.
 // ---------------------------------------------------------------------------
 
-// Serious preset (default) – light-dark via color-scheme
+// Basis: System-Schriften (kein Google Fonts, kein Tracking)
 html {
   color-scheme: light dark;
 
@@ -17,7 +46,10 @@ html {
       primary: mat.$azure-palette,
       tertiary: mat.$cyan-palette,
     ),
-    typography: Roboto,
+    typography: (
+      brand-family: 'system-ui',
+      plain-family: 'system-ui',
+    ),
     density: 0,
   ));
 }
@@ -26,18 +58,12 @@ html {
 html.dark  { color-scheme: dark; }
 html.light { color-scheme: light; }
 
-// Playful preset – overrides palette, typography, shapes; keeps light-dark mechanism
+// Playful preset – nur Palette + Formen, gleiche Schrift wie Seriös (System-UI)
 html.preset-playful {
-  font-family: 'Nunito', sans-serif;
-
   @include mat.theme((
     color: (
       primary: mat.$magenta-palette,
       tertiary: mat.$violet-palette,
-    ),
-    typography: (
-      brand-family: 'Nunito',
-      plain-family: 'Nunito',
     ),
   ));
 
