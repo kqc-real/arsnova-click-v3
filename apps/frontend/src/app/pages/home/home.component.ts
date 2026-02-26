@@ -98,43 +98,45 @@ function getPresetDefaults(preset: 'serious' | 'spielerisch'): PresetOptionState
       @if (presetToastVisible()) {
         <div class="preset-toast-backdrop" (click)="dismissPresetToast()">
           <div class="preset-toast" (click)="$event.stopPropagation()">
-          <div class="preset-toast__head">
-            <div class="preset-toast__head-text">
-              <p class="preset-toast__title">
-                <mat-icon class="preset-toast__title-icon">{{ presetToastIcon() }}</mat-icon>
-                {{ presetToastTitle() }}
-              </p>
-              <p class="preset-toast__preset-hint">{{ presetToastPresetHint() }}</p>
-            </div>
-            <button matIconButton type="button" class="preset-toast__close" aria-label="Hinweis schließen" (click)="dismissPresetToast()">
-              <mat-icon>close</mat-icon>
-            </button>
-          </div>
-          <p class="preset-toast__subtitle">Jede Option: <strong>an</strong> = aktiv, <strong>aus</strong> = deaktiviert. Klick wechselt, Speichern übernimmt.</p>
-          <div class="preset-toast__categories">
-            @for (group of presetOptionsByCategory(); track group.categoryId) {
-              <div class="preset-toast__category">
-                <p class="preset-toast__category-label">{{ group.categoryLabel }}</p>
-                <mat-chip-set class="preset-toast__chips">
-                  @for (opt of group.options; track opt.id) {
-                    <mat-chip
-                      [highlighted]="presetOptionEffective(opt.id)"
-                      (click)="togglePresetOption(opt.id)"
-                      [class.preset-toast__chip--disabled]="isPresetOptionDisabled(opt.id)"
-                      role="button"
-                      [attr.tabindex]="isPresetOptionDisabled(opt.id) ? -1 : 0"
-                      [attr.aria-pressed]="presetOptionEffective(opt.id)"
-                      [attr.aria-disabled]="isPresetOptionDisabled(opt.id)"
-                      [attr.aria-label]="opt.label + (presetOptionEffective(opt.id) ? ' an' : ' aus') + (isPresetOptionDisabled(opt.id) ? ', deaktiviert' : '')"
-                      class="preset-toast__chip"
-                    >
-                      <mat-icon class="preset-toast__chip-icon">{{ opt.icon }}</mat-icon>
-                      {{ opt.label }} {{ presetOptionEffective(opt.id) ? 'an' : 'aus' }}
-                    </mat-chip>
-                  }
-                </mat-chip-set>
+          <div class="preset-toast__scroll">
+            <div class="preset-toast__head">
+              <div class="preset-toast__head-text">
+                <p class="preset-toast__title">
+                  <mat-icon class="preset-toast__title-icon">{{ presetToastIcon() }}</mat-icon>
+                  {{ presetToastTitle() }}
+                </p>
+                <p class="preset-toast__preset-hint">{{ presetToastPresetHint() }}</p>
               </div>
-            }
+              <button matIconButton type="button" class="preset-toast__close" aria-label="Hinweis schließen" (click)="dismissPresetToast()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            <p class="preset-toast__subtitle">Jede Option: <strong>an</strong> = aktiv, <strong>aus</strong> = deaktiviert. Klick wechselt, Speichern übernimmt.</p>
+            <div class="preset-toast__categories">
+              @for (group of presetOptionsByCategory(); track group.categoryId) {
+                <div class="preset-toast__category">
+                  <p class="preset-toast__category-label">{{ group.categoryLabel }}</p>
+                  <mat-chip-set class="preset-toast__chips">
+                    @for (opt of group.options; track opt.id) {
+                      <mat-chip
+                        [highlighted]="presetOptionEffective(opt.id)"
+                        (click)="togglePresetOption(opt.id)"
+                        [class.preset-toast__chip--disabled]="isPresetOptionDisabled(opt.id)"
+                        role="button"
+                        [attr.tabindex]="isPresetOptionDisabled(opt.id) ? -1 : 0"
+                        [attr.aria-pressed]="presetOptionEffective(opt.id)"
+                        [attr.aria-disabled]="isPresetOptionDisabled(opt.id)"
+                        [attr.aria-label]="opt.label + (presetOptionEffective(opt.id) ? ' an' : ' aus') + (isPresetOptionDisabled(opt.id) ? ', deaktiviert' : '')"
+                        class="preset-toast__chip"
+                      >
+                        <mat-icon class="preset-toast__chip-icon">{{ opt.icon }}</mat-icon>
+                        {{ opt.label }} {{ presetOptionEffective(opt.id) ? 'an' : 'aus' }}
+                      </mat-chip>
+                    }
+                  </mat-chip-set>
+                </div>
+              }
+            </div>
           </div>
           <div class="preset-toast__actions">
             <button mat-button type="button" (click)="resetPresetOptions()">Zurücksetzen</button>
@@ -147,7 +149,7 @@ function getPresetDefaults(preset: 'serious' | 'spielerisch'): PresetOptionState
         </div>
       }
 
-      <header #homeHeader class="home-header" [class.home-header--above-toast]="presetToastVisible()" role="banner">
+      <header #homeHeader class="home-header" role="banner">
         <div class="home-header__row">
           <div class="home-brand">
             <svg class="home-brand__icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -349,7 +351,7 @@ function getPresetDefaults(preset: 'serious' | 'spielerisch'): PresetOptionState
 
           <mat-card-content>
             <div class="home-card__meta">
-              <p class="home-card__copy">Starten Sie eine Quiz-Session oder Q&amp;A-Runde – in wenigen Klicks.</p>
+              <p class="home-card__copy">Starten Sie eine Quiz-Session oder Q&amp;A-Runde – mit wenigen Klicks.</p>
               <a
                 matButton
                 class="home-help-btn"
@@ -450,12 +452,22 @@ function getPresetDefaults(preset: 'serious' | 'spielerisch'): PresetOptionState
       user-select: none;
       z-index: 71;
       width: min(96vw, 42rem);
-      overflow: visible;
+      max-height: min(90vh, 40rem);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
       border-radius: var(--mat-sys-corner-large);
       border: 1px solid var(--mat-sys-outline-variant);
       background: var(--mat-sys-surface-container);
       padding: 0.75rem;
       box-shadow: var(--mat-sys-level3);
+    }
+
+    .preset-toast__scroll {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .preset-toast__head {
@@ -547,7 +559,10 @@ function getPresetDefaults(preset: 'serious' | 'spielerisch'): PresetOptionState
     }
 
     .preset-toast__actions {
+      flex-shrink: 0;
       margin-top: 1rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--mat-sys-outline-variant);
       display: flex;
       justify-content: flex-end;
       gap: 0.5rem;
@@ -562,10 +577,6 @@ function getPresetDefaults(preset: 'serious' | 'spielerisch'): PresetOptionState
       background: var(--mat-sys-surface-container);
       padding: 1rem;
       box-shadow: var(--mat-sys-level1);
-    }
-
-    .home-header--above-toast {
-      z-index: 72;
     }
 
     .home-header__row {
