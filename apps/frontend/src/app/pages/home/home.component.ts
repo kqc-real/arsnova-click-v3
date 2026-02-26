@@ -25,23 +25,23 @@ const PRESET_CATEGORIES = [
 
 type CategoryId = (typeof PRESET_CATEGORIES)[number]['id'];
 
-/** Alle Preset-Optionen mit Kategorie und Label */
+/** Alle Preset-Optionen mit Kategorie und verständlichem Label (Wirkung erkennbar) */
 const PRESET_OPTION_IDS = [
-  { id: 'showLeaderboard', label: 'Leaderboard', categoryId: 'gamification' as CategoryId },
-  { id: 'enableRewardEffects', label: 'Belohnung', categoryId: 'gamification' as CategoryId },
-  { id: 'enableMotivationMessages', label: 'Motivation', categoryId: 'gamification' as CategoryId },
-  { id: 'enableEmojiReactions', label: 'Emoji', categoryId: 'gamification' as CategoryId },
-  { id: 'bonusTokenCount', label: 'Bonus-Token', categoryId: 'gamification' as CategoryId },
-  { id: 'allowCustomNicknames', label: 'Eigene Nicknames', categoryId: 'participation' as CategoryId },
-  { id: 'anonymousMode', label: 'Anonym', categoryId: 'participation' as CategoryId },
-  { id: 'nicknameTheme', label: 'Nickname-Thema', categoryId: 'participation' as CategoryId },
-  { id: 'defaultTimer', label: 'Timer', categoryId: 'flow' as CategoryId },
-  { id: 'readingPhaseEnabled', label: 'Lesephase', categoryId: 'flow' as CategoryId },
-  { id: 'teamMode', label: 'Team-Modus', categoryId: 'team' as CategoryId },
-  { id: 'teamCount', label: 'Anzahl Teams', categoryId: 'team' as CategoryId },
-  { id: 'teamAssignment', label: 'Team-Zuweisung', categoryId: 'team' as CategoryId },
-  { id: 'enableSoundEffects', label: 'Sound', categoryId: 'audio' as CategoryId },
-  { id: 'backgroundMusic', label: 'Hintergrundmusik', categoryId: 'audio' as CategoryId },
+  { id: 'showLeaderboard', label: 'Rangliste (Punkte & Platzierung)', categoryId: 'gamification' as CategoryId },
+  { id: 'enableRewardEffects', label: 'Effekte bei richtiger Antwort', categoryId: 'gamification' as CategoryId },
+  { id: 'enableMotivationMessages', label: 'Anfeuerungstexte nach Antwort', categoryId: 'gamification' as CategoryId },
+  { id: 'enableEmojiReactions', label: 'Emoji-Reaktionen zulassen', categoryId: 'gamification' as CategoryId },
+  { id: 'bonusTokenCount', label: 'Bonus-Token für Top-Plätze', categoryId: 'gamification' as CategoryId },
+  { id: 'allowCustomNicknames', label: 'Eigene Namen (statt vorgegebene Liste)', categoryId: 'participation' as CategoryId },
+  { id: 'anonymousMode', label: 'Anonym (keine Namen sichtbar)', categoryId: 'participation' as CategoryId },
+  { id: 'nicknameTheme', label: 'Vorgegebene Namen (z. B. Thema)', categoryId: 'participation' as CategoryId },
+  { id: 'defaultTimer', label: 'Zeitlimit pro Frage (Countdown)', categoryId: 'flow' as CategoryId },
+  { id: 'readingPhaseEnabled', label: 'Zuerst lesen, dann antworten', categoryId: 'flow' as CategoryId },
+  { id: 'teamMode', label: 'In Teams spielen', categoryId: 'team' as CategoryId },
+  { id: 'teamCount', label: 'Anzahl Teams (2–8)', categoryId: 'team' as CategoryId },
+  { id: 'teamAssignment', label: 'Teams automatisch/manuell zuweisen', categoryId: 'team' as CategoryId },
+  { id: 'enableSoundEffects', label: 'Sound bei Aktionen', categoryId: 'audio' as CategoryId },
+  { id: 'backgroundMusic', label: 'Hintergrundmusik in Lobby', categoryId: 'audio' as CategoryId },
 ] as const;
 
 type PresetOptionState = Record<string, boolean>;
@@ -104,7 +104,7 @@ function getPresetDefaults(preset: 'serious' | 'spielerisch'): PresetOptionState
               <mat-icon>close</mat-icon>
             </button>
           </div>
-          <p class="preset-toast__subtitle">Optionen an/aus — Klick wechselt, Speichern übernimmt</p>
+          <p class="preset-toast__subtitle">Jede Option: <strong>an</strong> = aktiv, <strong>aus</strong> = deaktiviert. Klick wechselt, Speichern übernimmt.</p>
           <div class="preset-toast__categories">
             @for (group of presetOptionsByCategory(); track group.categoryId) {
               <div class="preset-toast__category">
@@ -112,14 +112,16 @@ function getPresetDefaults(preset: 'serious' | 'spielerisch'): PresetOptionState
                 <mat-chip-set class="preset-toast__chips">
                   @for (opt of group.options; track opt.id) {
                     <mat-chip
-                      [highlighted]="presetOptionState()[opt.id]"
+                      [highlighted]="presetOptionEffective(opt.id)"
                       (click)="togglePresetOption(opt.id)"
+                      [class.preset-toast__chip--disabled]="isPresetOptionDisabled(opt.id)"
                       role="button"
-                      tabindex="0"
-                      [attr.aria-pressed]="presetOptionState()[opt.id]"
-                      [attr.aria-label]="opt.label + (presetOptionState()[opt.id] ? ' an' : ' aus')"
+                      [attr.tabindex]="isPresetOptionDisabled(opt.id) ? -1 : 0"
+                      [attr.aria-pressed]="presetOptionEffective(opt.id)"
+                      [attr.aria-disabled]="isPresetOptionDisabled(opt.id)"
+                      [attr.aria-label]="opt.label + (presetOptionEffective(opt.id) ? ' an' : ' aus') + (isPresetOptionDisabled(opt.id) ? ', deaktiviert' : '')"
                     >
-                      {{ opt.label }} {{ presetOptionState()[opt.id] ? 'an' : 'aus' }}
+                      {{ opt.label }} {{ presetOptionEffective(opt.id) ? 'an' : 'aus' }}
                     </mat-chip>
                   }
                 </mat-chip-set>
@@ -496,6 +498,11 @@ function getPresetDefaults(preset: 'serious' | 'spielerisch'): PresetOptionState
 
     .preset-toast__chips mat-chip {
       cursor: pointer;
+    }
+
+    .preset-toast__chips mat-chip.preset-toast__chip--disabled {
+      cursor: default;
+      opacity: 0.6;
     }
 
     .preset-toast__actions {
@@ -1134,9 +1141,44 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /** Optionen, die nur wirksam sind, wenn die übergeordnete Option an ist (z. B. Team-Anzahl nur bei Team-Modus) */
+  private static readonly OPTION_REQUIRES_PARENT_ON: Record<string, string> = {
+    teamCount: 'teamMode',
+    teamAssignment: 'teamMode',
+  };
+  /** Optionen, die unwirksam sind, wenn die übergeordnete Option an ist (z. B. Nicknames bei Anonym) */
+  private static readonly OPTION_DISABLED_WHEN_PARENT_ON: Record<string, string> = {
+    allowCustomNicknames: 'anonymousMode',
+    nicknameTheme: 'anonymousMode',
+  };
+
+  /** True, wenn die Option ausgegraut und nicht klickbar ist */
+  isPresetOptionDisabled(id: string): boolean {
+    const parentOn = HomeComponent.OPTION_REQUIRES_PARENT_ON[id];
+    if (parentOn) return !this.presetOptionState()[parentOn];
+    const parentOff = HomeComponent.OPTION_DISABLED_WHEN_PARENT_ON[id];
+    if (parentOff) return !!this.presetOptionState()[parentOff];
+    return false;
+  }
+
+  /** Anzeige-Wert: bei deaktivierten abhängigen Optionen immer „aus“ */
+  presetOptionEffective(id: string): boolean {
+    if (this.isPresetOptionDisabled(id)) return false;
+    return !!this.presetOptionState()[id];
+  }
+
   togglePresetOption(id: string): void {
+    if (this.isPresetOptionDisabled(id)) return;
     const state = { ...this.presetOptionState() };
     state[id] = !state[id];
+    if (id === 'teamMode' && !state[id]) {
+      state['teamCount'] = false;
+      state['teamAssignment'] = false;
+    }
+    if (id === 'anonymousMode' && state[id]) {
+      state['allowCustomNicknames'] = false;
+      state['nicknameTheme'] = false;
+    }
     this.presetOptionState.set(state);
   }
 
@@ -1174,6 +1216,14 @@ export class HomeComponent implements OnInit, AfterViewInit {
       }
     } catch {
       state = getPresetDefaults(preset);
+    }
+    if (state['teamMode'] === false) {
+      state['teamCount'] = false;
+      state['teamAssignment'] = false;
+    }
+    if (state['anonymousMode'] === true) {
+      state['allowCustomNicknames'] = false;
+      state['nicknameTheme'] = false;
     }
     this.presetOptionState.set(state);
     this.presetToastVisible.set(true);
