@@ -11,7 +11,7 @@ import {
 const _origStderrWrite = process.stderr.write.bind(process.stderr);
 process.stderr.write = ((chunk: unknown, ...rest: unknown[]) => {
   if (typeof chunk === 'string' && chunk.includes('Could not parse CSS stylesheet')) return true;
-  return (_origStderrWrite as Function)(chunk, ...rest);
+  return (_origStderrWrite as (...a: unknown[]) => boolean)(chunk, ...rest);
 }) as typeof process.stderr.write;
 
 TestBed.initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting());

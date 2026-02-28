@@ -212,7 +212,6 @@ describe('PresetToastComponent', () => {
     it('setter ignoriert ungültigen Wert', () => {
       const comp = createToast();
       comp.nicknameThemeValue.set('NOBEL_LAUREATES');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       comp.nicknameThemeSelectValue = 'INVALID' as unknown as NicknameTheme;
       expect(comp.nicknameThemeValue()).toBe('NOBEL_LAUREATES');
     });
