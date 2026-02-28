@@ -87,7 +87,33 @@ npm run dev
 
 Die App ist nun unter `http://localhost:4200` (Frontend) erreichbar; auf der Startseite erscheint das **Server-Status-Widget** (Epic 0.4: aktive Sessions, Teilnehmer, completed Sessions, Status-Indikator). Die tRPC-API läuft auf `http://localhost:3000`; WebSocket-Subscriptions auf Port 3001, Yjs-Sync auf Port 3002.
 
-**Reload / Deployment:** Damit Reload auf Unterseiten (z. B. `/legal/imprint`) nicht zu einer leeren Seite führt, muss der Server bei allen Client-Routen `index.html` ausliefern (SPA-Fallback). Beim lokalen `ng serve` ist das Standard. Für Production: Bei Vercel wird `apps/frontend/vercel.json` genutzt; bei Nginx/Apache/anderen Hosts eine Rewrite-Regel auf `index.html` setzen.
+**Reload / Deployment:** Damit Reload auf Unterseiten (z. B. `/legal/imprint`) nicht zu einer leeren Seite führt, muss der Server bei allen Client-Routen `index.html` ausliefern (SPA-Fallback). Beim lokalen `ng serve` ist das Standard. Für Production: Bei Vercel wird `apps/frontend/vercel.json` genutzt; bei Nginx/Apache/anderen Hosts eine Rewrite-Regel auf `index.html` setzen.
+
+### 4. Tests ausführen
+
+Alle Tests (Backend + Frontend) auf einen Schlag:
+
+```bash
+npm test
+```
+
+Oder einzeln pro Workspace:
+
+```bash
+# Backend-Tests (Vitest)
+npm test -w @arsnova/backend
+
+# Frontend-Tests (Vitest + @analogjs/vitest-angular)
+npm test -w @arsnova/frontend
+```
+
+Für den Watch-Modus während der Entwicklung:
+
+```bash
+npm run test:watch -w @arsnova/frontend
+```
+
+> **Hinweis:** Die Frontend-Tests laufen in einer jsdom-Umgebung. Angular-Material-Stylesheets können dort nicht vollständig geparst werden – die resultierende Warnung wird im Test-Setup automatisch unterdrückt.
 
 ## 🤖 Vibe Coding & KI-Assistenz
 
