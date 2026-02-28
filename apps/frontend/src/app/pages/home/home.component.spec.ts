@@ -8,6 +8,7 @@ import { provideRouter, Router } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { HomeComponent } from './home.component';
 import { PresetToastComponent } from '../../components/preset-toast/preset-toast.component';
+import type { NicknameTheme } from '@arsnova/shared-types';
 
 vi.mock('../../../trpc.client', () => ({
   trpc: {
@@ -211,7 +212,8 @@ describe('PresetToastComponent', () => {
     it('setter ignoriert ungültigen Wert', () => {
       const comp = createToast();
       comp.nicknameThemeValue.set('NOBEL_LAUREATES');
-      comp.nicknameThemeSelectValue = 'INVALID' as any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      comp.nicknameThemeSelectValue = 'INVALID' as unknown as NicknameTheme;
       expect(comp.nicknameThemeValue()).toBe('NOBEL_LAUREATES');
     });
   });
@@ -255,7 +257,7 @@ describe('PresetToastComponent', () => {
 
     it('fallback auf erstes Element bei unbekanntem Wert', () => {
       const comp = createToast();
-      (comp.nicknameThemeValue as any).set('UNKNOWN');
+      (comp.nicknameThemeValue as unknown as { set(v: string): void }).set('UNKNOWN');
       const opt = comp.selectedNicknameTheme();
       expect(opt.value).toBe('NOBEL_LAUREATES');
     });
